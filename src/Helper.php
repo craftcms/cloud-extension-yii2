@@ -18,6 +18,10 @@ class Helper
 
     public static function artifactUrl(string $path): string
     {
+        if (!self::isCraftCloud()) {
+            return $path;
+        }
+
         return (new BuildArtifactsFs())->createUrl($path);
     }
 }
