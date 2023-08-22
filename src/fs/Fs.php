@@ -7,6 +7,7 @@ use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\cloud\Helper;
 use craft\cloud\Module;
 use craft\errors\FsException;
 use craft\flysystem\base\FlysystemFs;
@@ -169,6 +170,10 @@ class Fs extends FlysystemFs
 
     public function getBucketName(): ?string
     {
+        if (!Helper::isCraftCloud()) {
+            return '';
+        }
+
         return Module::getInstance()->getConfig()->projectId;
     }
 
