@@ -16,11 +16,13 @@ use craft\cloud\web\assets\uploader\UploaderAsset;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\App;
+use craft\log\Dispatcher;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
 use craft\web\Response;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use Illuminate\Support\Collection;
 
 /**
  * @property-read Config $config
@@ -54,10 +56,32 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
      */
     public function bootstrap($app): void
     {
+        /** @var \craft\web\Application|\craft\console\Application $app */
+
         // Required for controllers to be found
         $app->setModule($this->id, $this);
 
         $app->getView()->registerTwigExtension(new TwigExtension());
+
+        if (Helper::isCraftCloud()) {
+
+            // Set Craft memory limit to just below PHP's limit
+            Helper::setMemoryLimit(ini_get('memory_limit'), $app->getErrorHandler()->memoryReserveSize);
+
+            if (!$app->getRequest()->getIsConsoleRequest()) {
+                $app->getRequest()->secureHeaders = Collection::make($app->getRequest()->secureHeaders)
+                    ->reject(fn(string $header) => $header === 'X-Forwarded-Host')
+                    ->all();
+            }
+
+            /** @var Dispatcher $dispatcher */
+            $dispatcher = $app->getLog();
+
+            // Force JSON
+            $dispatcher->monologTargetConfig = [
+                'allowLineBreaks' => false,
+            ];
+        }
 
         if ($this->getConfig()->enableCache) {
             $app->set('cache', Cache::class);
@@ -89,7 +113,11 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
                 'fs' => Craft::createObject(CpResourcesFs::class),
             ]);
 
-            Craft::$app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
+            $app->getConfig()->getGeneral()->resourceBaseUrl(
+                Helper::cpResourceUrl(),
+            );
+
+            $app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
 
             /**
              * Currently this is the only reasonable way to change the default transformer
@@ -98,10 +126,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
                 \craft\imagetransforms\ImageTransformer::class,
                 ImageTransformer::class,
             );
-        }
-
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $app->getView()->registerAssetBundle(UploaderAsset::class);
         }
 
         if ($this->getConfig()->enableTmpFs) {
@@ -125,6 +149,11 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
                 ],
             );
         }
+
+        // Must be after setting assetManager
+        if ($app->getRequest()->getIsCpRequest()) {
+            $app->getView()->registerAssetBundle(UploaderAsset::class);
+        }
     }
 
     public function getConfig(): Config
@@ -134,8 +163,12 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         }
 
         $fileConfig = Craft::$app->getConfig()->getConfigFromFile($this->id);
+
         /** @var Config $config */
-        $config = is_array($fileConfig) ? Craft::createObject(Config::class, $fileConfig) : $fileConfig;
+        $config = is_array($fileConfig)
+            ? Craft::createObject(Config::class, $fileConfig)
+            : $fileConfig;
+
         $this->_config = Craft::configure($config, App::envConfig(Config::class, 'CRAFT_CLOUD_'));
 
         return $this->_config;
@@ -177,7 +210,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             }
         );
 
-        if (!$this->getConfig()->allowBinaryResponses) {
+        if (!$this->getConfig()->allowBinaryResponses && Craft::$app->getRequest()->getIsCpRequest()) {
             Event::once(
                 Response::class,
                 \yii\web\Response::EVENT_BEFORE_SEND,

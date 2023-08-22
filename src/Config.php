@@ -20,6 +20,7 @@ class Config extends BaseConfig
     public ?string $accessKey = null;
     public ?string $accessSecret = null;
     public ?string $region = null;
+    public ?string $cdnSigningKey = null;
     public bool $enableCache = false;
     public bool $enableMutex = false;
     public bool $enableSession = false;
@@ -54,7 +55,7 @@ class Config extends BaseConfig
         }
     }
 
-    public function getRegion(): string
+    public function getRegion(): ?string
     {
         return $this->region ?? App::env('AWS_REGION');
     }

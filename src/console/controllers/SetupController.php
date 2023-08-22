@@ -5,14 +5,12 @@ namespace craft\cloud\console\controllers;
 use craft\console\Controller;
 use yii\console\ExitCode;
 
-class UpController extends Controller
+class SetupController extends Controller
 {
     public function actionIndex(): int
     {
-        // TODO: wrap with events
-        $this->run('/up');
-        $this->run('asset-bundles/publish');
-
+        // TODO: link to docs, etc
+        $this->run('info/index');
         return ExitCode::OK;
     }
 }

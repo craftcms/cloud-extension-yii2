@@ -20,6 +20,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('artifactUrl', [Helper::class, 'artifactUrl']),
+            new TwigFunction('cpResourceUrl', [Helper::class, 'cpResourceUrl']),
         ];
     }
 }

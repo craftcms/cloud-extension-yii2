@@ -2,6 +2,7 @@
 
 namespace craft\cloud;
 
+use Craft;
 use craft\base\Component;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
@@ -9,6 +10,7 @@ use craft\elements\Asset;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
+use Illuminate\Support\Collection;
 
 /**
  * TODO: ImageEditorTransformerInterface
@@ -41,7 +43,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface
 
     public function buildTransformParams(ImageTransform $imageTransform): array
     {
-        //        'anim',
+
+//        'anim',
 //        'background',
 //        'blur',
 //        'border',
@@ -62,12 +65,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface
 //        'trim',
 //        'width',
 
-        return [
+        return Collection::make([
             'width' => $imageTransform->width,
             'height' => $imageTransform->height,
             'quality' => $imageTransform->quality,
             'format' => $imageTransform->format,
-        ];
+        ])->whereNotNull()->all();
     }
 
     public function sign(string $path, $params): string
@@ -75,10 +78,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $paramString = http_build_query($params);
         $data = "$path#?$paramString";
 
-        return hash_hmac(
+        Craft::info("Signing transform: “{$data}”");
+
+        return base64_encode(hash_hmac(
             'sha256',
             $data,
-            App::env('CRAFT_CLOUD_ASSET_SIGNING_KEY')
-        );
+            Module::getInstance()->getConfig()->cdnSigningKey,
+        ));
     }
 }
