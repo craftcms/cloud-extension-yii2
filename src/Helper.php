@@ -30,6 +30,10 @@ class Helper
 
     public static function cpResourceUrl(string $path = ''): string
     {
+        if (!self::isCraftCloud()) {
+            return $path;
+        }
+
         return (new CpResourcesFs())->createUrl($path);
     }
 
