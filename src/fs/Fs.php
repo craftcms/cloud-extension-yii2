@@ -18,10 +18,6 @@ use DateTime;
 use DateTimeInterface;
 use Generator;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\UnableToCopyFile;
-use League\Flysystem\UnableToCreateDirectory;
-use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\Visibility;
 use League\Uri\Components\HierarchicalPath;
 use League\Uri\Components\Path;
@@ -341,66 +337,6 @@ abstract class Fs extends FlysystemFs
 
             return (string)$request->getUri();
         } catch (Throwable $exception) {
-            throw new FsException($exception->getMessage(), 0, $exception);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * Duping parent to add config…
-     * @see https://github.com/craftcms/flysystem/pull/9
-     */
-    public function copyFile(string $path, string $newPath): void
-    {
-        if ($this->useLocalFs) {
-            $this->getLocalFs()->copyFile($path, $newPath);
-            return;
-        }
-
-        try {
-            $config = $this->addFileMetadataToConfig([]);
-            $this->filesystem()->copy($path, $newPath, $config);
-        } catch (FilesystemException|UnableToCopyFile $exception) {
-            throw new FsException($exception->getMessage(), 0, $exception);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * Duping parent method to add config…
-     * @see https://github.com/craftcms/flysystem/pull/9
-     */
-    public function renameFile(string $path, string $newPath): void
-    {
-        if ($this->useLocalFs) {
-            $this->getLocalFs()->renameFile($path, $newPath);
-            return;
-        }
-
-        try {
-            $config = $this->addFileMetadataToConfig([]);
-            $this->filesystem()->move($path, $newPath, $config);
-        } catch (FilesystemException|UnableToMoveFile $exception) {
-            throw new FsException($exception->getMessage(), 0, $exception);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * Duping parent method to add config…
-     * @see https://github.com/craftcms/flysystem/pull/9
-     */
-    public function createDirectory(string $path, array $config = []): void
-    {
-        if ($this->useLocalFs) {
-            $this->getLocalFs()->createDirectory($path, $config);
-            return;
-        }
-
-        try {
-            $config = $this->addFileMetadataToConfig([]);
-            $this->filesystem()->createDirectory($path, $config);
-        } catch (FilesystemException|UnableToCreateDirectory $exception) {
             throw new FsException($exception->getMessage(), 0, $exception);
         }
     }
