@@ -113,7 +113,7 @@ class AssetBundlePublisher extends BaseObject
                 }
 
                 // TODO: event
-                return (bool) preg_match('/(\\\assets\\\|assetbundles?|Asset(Bundle)?$)/', $className);
+                return (bool) preg_match('/(asset|bundle)/i', $className);
             })
             ->values()
             ->all();
