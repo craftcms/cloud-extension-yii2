@@ -6,10 +6,10 @@
     id: 'subpath',
     class: 'ltr',
     name: 'subpath',
-    suggestEnvVars: true,
     value: fs.subpath,
     errors: fs.getErrors('subpath'),
-    placeholder: "path/to/subpath"|t('cloud')
+    placeholder: "path/to/subpath"|t('cloud'),
+    tip: "This value will be appended to the **Base Path** and **Base URL** settings."|t('cloud')
 }) }}
 
 {% set cacheDurationInput %}
@@ -71,8 +71,7 @@
     value: fs.localFsPath ?? null,
     errors: fs.getErrors('localFsPath') ?? null,
     required: true,
-    placeholder: "@webroot/path/to/folder"|t('app'),
-    tip: "The **Subpath** setting is appended to this path."|t('app', { ex: '{handle}' })
+    placeholder: "@webroot/path/to/folder"|t('app')
 }) }}
 
 <div id="local-fs-url-field" class="{% if not fs.hasUrls %}hidden{% endif %}">
@@ -88,7 +87,6 @@
         errors: fs.getErrors('localFsUrl') ?? null,
         required: true,
         placeholder: "@web/path/to/folder",
-        tip: "The **Subpath** setting is appended to this URL."|t('app', { ex: '{handle}' })
     }) }}
 </div>
 
