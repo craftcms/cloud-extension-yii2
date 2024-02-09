@@ -21,7 +21,6 @@ use craft\helpers\App;
 use craft\imagetransforms\FallbackTransformer;
 use craft\imagetransforms\ImageTransformer as CraftImageTransformerAlias;
 use craft\log\Dispatcher;
-use craft\log\MonologTarget;
 use craft\services\Elements;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
@@ -123,12 +122,8 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
         /** @var Dispatcher $dispatcher */
         $dispatcher = $app->getLog();
-        $dispatcher->targets = Collection::make($dispatcher->getTargets())
+        $dispatcher->targets = Collection::make($dispatcher->getDefaultTargets())
             ->map(function(Target $target) {
-                if (!($target instanceof MonologTarget)) {
-                    return $target;
-                }
-
                 return Craft::configure($target, [
                     'logContext' => false,
                 ]);
