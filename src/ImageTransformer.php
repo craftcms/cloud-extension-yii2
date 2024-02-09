@@ -26,8 +26,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $this->asset = $asset;
-        $fs = $asset->getVolume()->getTransformFs();
-        $assetUrl = Html::encodeSpaces(Assets::generateUrl($fs, $this->asset));
+        $volume = $asset->getVolume();
+        $fs = $volume->getTransformFs();
+        $assetUrl = Html::encodeSpaces(Assets::generateUrl($volume, $this->asset));
         $mimeType = $asset->getMimeType();
 
         if (!$fs->hasUrls) {
