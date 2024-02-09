@@ -53,7 +53,9 @@ class StaticCaching extends \yii\base\Component
         /** @var int|null $duration */
         [$dependency, $duration] = Craft::$app->getElements()->stopCollectingCacheInfo();
 
-        $this->addCacheTagsToResponse($dependency?->tags, $duration);
+        if ($dependency?->tags) {
+            $this->addCacheTagsToResponse($dependency->tags, $duration);
+        }
     }
 
     public function handleInvalidateCaches(InvalidateElementCachesEvent $event): void
