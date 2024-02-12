@@ -230,8 +230,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getBodyParam('assetId');
         $sourceAssetId = $this->request->getBodyParam('sourceAssetId');
         $filename = $this->request->getBodyParam('filename');
-        $originalFilename = $this->request->getBodyParam('originalFilename');
-        $targetFilename = $originalFilename ? Assets::prepareAssetName($originalFilename) : null;
+        $targetFilename = $this->request->getBodyParam('targetFilename');
         $assets = Craft::$app->getAssets();
 
         // Must have at least one existing asset (source or target).
