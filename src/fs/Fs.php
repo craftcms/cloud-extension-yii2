@@ -76,10 +76,6 @@ abstract class Fs extends FlysystemFs
      */
     public function getRootUrl(): ?string
     {
-        if (!$this->hasUrls) {
-            return null;
-        }
-
         try {
             return $this->createUrl();
         } catch (FsException $e) {
