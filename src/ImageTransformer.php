@@ -31,10 +31,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $assetUrl = Html::encodeSpaces(Assets::generateUrl($volume, $this->asset));
         $mimeType = $asset->getMimeType();
 
-        if (!$fs->hasUrls) {
-            throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
-        }
-
         if ($mimeType === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
             throw new NotSupportedException('GIF files shouldn’t be transformed.');
         }
