@@ -19,7 +19,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\fs\Temp;
 use craft\helpers\App;
 use craft\imagetransforms\FallbackTransformer;
-use craft\imagetransforms\ImageTransformer as CraftImageTransformerAlias;
+use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
 use craft\log\Dispatcher;
 use craft\services\Elements;
 use craft\services\Fs as FsService;
@@ -78,6 +78,24 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         if (Helper::isCraftCloud()) {
             $this->bootstrapCloud($app);
         }
+
+        if ($this->getConfig()->getUseAssetCdn()) {
+            $app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
+
+            /**
+             * Currently this is the only reasonable way to change the default transformer
+             */
+            Craft::$container->set(
+                CraftImageTransformer::class,
+                ImageTransformer::class,
+            );
+
+            // TODO: this is to ensure PHP never transforms. Test this.
+            Craft::$container->set(
+                FallbackTransformer::class,
+                ImageTransformer::class,
+            );
+        }
     }
 
     public function getConfig(): Config
@@ -129,22 +147,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
                 ]);
             })
             ->all();
-
-        $app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
-
-        /**
-         * Currently this is the only reasonable way to change the default transformer
-         */
-        Craft::$container->set(
-            CraftImageTransformerAlias::class,
-            ImageTransformer::class,
-        );
-
-        // TODO: this is to ensure PHP never transforms. Test this.
-        Craft::$container->set(
-            FallbackTransformer::class,
-            ImageTransformer::class,
-        );
 
         Craft::$container->set(
             Temp::class,
