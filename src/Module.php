@@ -40,6 +40,9 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 {
     private Config $_config;
 
+    public const EVENT_BEFORE_UP = 'beforeUp';
+    public const EVENT_AFTER_UP = 'afterUp';
+
     /**
      * @inheritDoc
      * @throws InvalidConfigException

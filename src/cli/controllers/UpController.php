@@ -3,17 +3,19 @@
 namespace craft\cloud\cli\controllers;
 
 use Craft;
-use craft\cloud\EventEnum;
 use craft\console\Controller;
 use craft\events\CancelableEvent;
 use yii\console\ExitCode;
 
 class UpController extends Controller
 {
+    public const EVENT_BEFORE_UP = 'beforeUp';
+    public const EVENT_AFTER_UP = 'afterUp';
+
     public function actionIndex(): int
     {
         $event = new CancelableEvent();
-        $this->trigger(EventEnum::BEFORE_UP->value, $event);
+        $this->trigger(self::EVENT_BEFORE_UP, $event);
 
         if (!$event->isValid) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -28,7 +30,7 @@ class UpController extends Controller
         }
 
         $event = new CancelableEvent();
-        $this->trigger(EventEnum::AFTER_UP->value, $event);
+        $this->trigger(self::EVENT_AFTER_UP, $event);
 
         if (!$event->isValid) {
             return ExitCode::UNSPECIFIED_ERROR;
