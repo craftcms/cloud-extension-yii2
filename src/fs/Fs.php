@@ -244,7 +244,7 @@ abstract class Fs extends FlysystemFs
             $this->getPrefix(),
             $this->subpath ?? '',
             $path,
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        )->withoutEmptySegments();
     }
 
     public function getBucketName(): ?string
