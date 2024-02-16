@@ -12,10 +12,6 @@ abstract class BuildsFs extends Fs
 
     public function getPrefix(): string
     {
-        if (!Module::getInstance()->getConfig()->getUseArtifactCdn()) {
-            return '';
-        }
-
         return HierarchicalPath::fromRelative(
             parent::getPrefix(),
             'builds',

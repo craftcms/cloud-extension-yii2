@@ -92,6 +92,12 @@ SQL;
             return;
         }
 
+        // Make sure the app has an ID and it isn't the default
+        if (!$config['id'] || $config['id'] === 'CraftCMS') {
+            $projectId = App::env('CRAFT_CLOUD_PROJECT_ID');
+            $config['id'] = "CraftCMS--$projectId";
+        }
+
         if ($appType === 'web') {
             $config['components']['session'] = function() {
                 $config = App::sessionConfig();

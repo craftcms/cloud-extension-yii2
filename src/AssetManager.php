@@ -5,6 +5,7 @@ namespace craft\cloud;
 use Craft;
 use craft\cloud\fs\CpResourcesFs;
 use craft\helpers\FileHelper;
+use League\Uri\Modifier;
 
 class AssetManager extends \craft\web\AssetManager
 {
@@ -31,7 +32,7 @@ class AssetManager extends \craft\web\AssetManager
         }
 
         if (Module::getInstance()->getConfig()->useAssetBundleCdn) {
-            $this->baseUrl = (new CpResourcesFs())->getRootUrl();
+            $this->baseUrl = Modifier::from((new CpResourcesFs())->createUrl())->removeTrailingSlash();
         }
     }
 
