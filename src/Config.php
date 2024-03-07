@@ -29,6 +29,7 @@ class Config extends BaseConfig
     public ?string $previewDomain = null;
     public bool $useQueue = true;
     public ?string $storageEndpoint = null;
+    protected bool $devMode = false;
     protected ?string $region = null;
     protected array $s3ClientOptions = [];
     protected bool $useAssetCdn = true;
@@ -75,6 +76,18 @@ class Config extends BaseConfig
     public function setS3ClientOptions(array $s3ClientOptions): static
     {
         $this->s3ClientOptions = $s3ClientOptions;
+
+        return $this;
+    }
+
+    public function getDevMode(): bool
+    {
+        return App::env('CRAFT_CLOUD_DEV_MODE') ?? Craft::$app->getConfig()->getGeneral()->devMode;
+    }
+
+    public function setDevMode(bool $value): static
+    {
+        $this->devMode = $value;
 
         return $this;
     }

@@ -6,6 +6,7 @@ use Bref\Bref;
 use Bref\FpmRuntime\FpmHandler;
 use Bref\Runtime\LambdaRuntime;
 use craft\cloud\runtime\event\EventHandler;
+use craft\cloud\runtime\variables\VariablesLoader;
 use RuntimeException;
 use Throwable;
 
@@ -23,6 +24,8 @@ class Runtime
         error_reporting(E_ALL);
 
         Bref::triggerHooks('beforeStartup');
+
+        VariablesLoader::load();
 
         $lambdaRuntime = LambdaRuntime::fromEnvironmentVariable('fpm');
 

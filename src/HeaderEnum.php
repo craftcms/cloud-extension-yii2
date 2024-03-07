@@ -5,7 +5,10 @@ namespace craft\cloud;
 enum HeaderEnum: string
 {
     case CACHE_TAG = 'Cache-Tag';
-    case CACHE_PURGE = 'Cache-Purge';
+    case CACHE_PURGE_TAG = 'Cache-Purge-Tag';
+    case CACHE_PURGE_PREFIX = 'Cache-Purge-Prefix';
     case CACHE_CONTROL = 'Cache-Control';
     case AUTHORIZATION = 'Authorization';
+    case DEV_MODE = 'Dev-Mode';
+    case REQUEST_TYPE = 'Request-Type';
 }

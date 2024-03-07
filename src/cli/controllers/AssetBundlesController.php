@@ -6,7 +6,6 @@ use Craft;
 use craft\cloud\AssetBundlePublisher;
 use craft\cloud\AssetManager;
 use craft\cloud\Composer;
-use craft\cloud\Helper;
 use craft\console\Controller;
 use craft\helpers\App;
 use ReflectionClass;
@@ -28,8 +27,8 @@ class AssetBundlesController extends Controller
 
     public function beforeAction($action): bool
     {
-        if (Helper::isCraftCloud()) {
-            throw new Exception('Asset bundle publishing is not supported in a Craft Cloud environment.');
+        if (App::isEphemeral()) {
+            throw new Exception('Asset bundle publishing is not supported in ephemeral environments.');
         }
 
         if (App::env('CRAFT_NO_DB')) {

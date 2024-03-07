@@ -190,8 +190,7 @@ abstract class Fs extends FlysystemFs
      */
     protected function invalidateCdnPath(string $path): bool
     {
-        // TODO: cloudflare
-        return false;
+        return true;
     }
 
     /**
@@ -204,7 +203,11 @@ abstract class Fs extends FlysystemFs
             $now = new DateTime();
             $expires->modify('+' . $this->getExpires());
             $diff = (int)$expires->format('U') - (int)$now->format('U');
-            $config['CacheControl'] = "max-age=$diff";
+
+            // Setting this in metadata instead of `CacheControl` because
+            // `CacheControl` is not respected by S3 when using presigned PUT URLs.
+            // @see https://github.com/aws/aws-sdk-php/issues/1691
+            $config['Metadata']['max-age'] = $diff;
         }
 
         $config['Metadata']['visibility'] = $this->hasUrls

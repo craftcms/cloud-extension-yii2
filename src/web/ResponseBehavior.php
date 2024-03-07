@@ -5,6 +5,7 @@ namespace craft\cloud\web;
 use Craft;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\HeaderEnum;
+use craft\cloud\Module;
 use craft\web\Response;
 use Illuminate\Support\Collection;
 use yii\base\Behavior;
@@ -17,16 +18,6 @@ use yii\web\ServerErrorHttpException;
  */
 class ResponseBehavior extends Behavior
 {
-    protected array $csvHeaders = [];
-
-    public function init(): void
-    {
-        $this->csvHeaders = [
-            HeaderEnum::CACHE_TAG->value,
-            HeaderEnum::CACHE_PURGE->value,
-        ];
-    }
-
     public function events(): array
     {
         return [
@@ -51,6 +42,7 @@ class ResponseBehavior extends Behavior
 
     public function afterPrepare(Event $event): void
     {
+        $this->addDevModeHeader();
         $this->joinMultiValueHeaders();
         $this->gzip();
         $this->serveBinaryFromS3();
@@ -121,5 +113,12 @@ class ResponseBehavior extends Behavior
         $this->owner->getHeaders()->set($name, $value);
 
         return $value;
+    }
+
+    protected function addDevModeHeader(): void
+    {
+        if (Module::getInstance()->getConfig()->getDevMode()) {
+            $this->owner->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
+        }
     }
 }

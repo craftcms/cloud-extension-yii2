@@ -5,11 +5,10 @@ namespace craft\cloud\fs;
 use craft\cloud\Module;
 use League\Uri\Components\HierarchicalPath;
 
-class AssetsFs extends Fs
+class AssetsFs extends CdnFs
 {
     public ?string $localFsPath = '@webroot/uploads';
     public ?string $localFsUrl = '@web/uploads';
-    protected ?string $expires = '1 years';
 
     public function init(): void
     {

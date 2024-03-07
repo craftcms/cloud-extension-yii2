@@ -11,8 +11,11 @@ use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\queue\Queue as CraftQueue;
+use GuzzleHttp\Psr7\Request;
 use HttpSignatures\Context;
 use Illuminate\Support\Collection;
+use Psr\Http\Message\ResponseInterface;
+use yii\base\Exception;
 use yii\web\DbSession;
 
 class Helper
@@ -154,7 +157,7 @@ SQL;
                 'hmac' => Module::getInstance()->getConfig()->signingKey,
             ],
             'algorithm' => 'hmac-sha256',
-            'headers' => $headers->push('(request-target)')->all(),
+            'headers' => $headers->all(),
         ]);
     }
 
@@ -163,5 +166,38 @@ SQL;
         $base64Url = strtr(base64_encode($data), '+/', '-_');
 
         return rtrim($base64Url, '=');
+    }
+
+    public static function makeGatewayApiRequest(iterable $headers): ResponseInterface
+    {
+        if (!Helper::isCraftCloud()) {
+            throw new Exception('Gateway API requests are only supported in a Craft Cloud environment.');
+        }
+
+        $headers = Collection::make($headers)
+            ->put(HeaderEnum::REQUEST_TYPE->value, 'api');
+
+        if (Module::getInstance()->getConfig()->getDevMode()) {
+            $headers->put(HeaderEnum::DEV_MODE->value, '1');
+        }
+
+        $url = Craft::$app->getRequest()->getIsConsoleRequest()
+            ? Module::getInstance()->getConfig()->getPreviewDomainUrl()
+            : Craft::$app->getRequest()->getHostInfo();
+
+        if (!$url) {
+            throw new Exception('Gateway API requests require a URL.');
+        }
+
+        $context = Helper::createSigningContext($headers->keys());
+        $request = new Request(
+            'HEAD',
+            (string) $url,
+            $headers->all(),
+        );
+
+        return Craft::createGuzzleClient()->send(
+            $context->signer()->sign($request)
+        );
     }
 }

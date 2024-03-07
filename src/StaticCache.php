@@ -9,13 +9,11 @@ use craft\events\TemplateEvent;
 use craft\web\Response as WebResponse;
 use craft\web\UrlManager;
 use craft\web\View;
-use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;
 use samdark\log\PsrMessage;
-use yii\base\Exception;
 use yii\caching\TagDependency;
 
-class StaticCaching extends \yii\base\Component
+class StaticCache extends \yii\base\Component
 {
     public function handleBeforeRenderPageTemplate(TemplateEvent $event): void
     {
@@ -79,22 +77,11 @@ class StaticCaching extends \yii\base\Component
     public function purgeAll(): void
     {
         $headers = Collection::make([
-            HeaderEnum::CACHE_PURGE->value => '*',
+            HeaderEnum::CACHE_PURGE_PREFIX->value => '/',
         ]);
 
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-            $url = Module::getInstance()->getConfig()->getPreviewDomainUrl();
-
-            if (!$url) {
-                throw new Exception('Unable to purge cache from the CLI without a preview domain.');
-            }
-
-            $context = Helper::createSigningContext($headers->keys());
-            $request = new Request('HEAD', (string) $url, $headers->all());
-            Craft::createGuzzleClient()->send(
-                $context->signer()->sign($request)
-            );
-
+            Helper::makeGatewayApiRequest($headers);
             return;
         }
 
@@ -107,6 +94,8 @@ class StaticCaching extends \yii\base\Component
 
     protected function prepareTags(iterable $tags): Collection
     {
+        Craft::info(new PsrMessage('Preparing tags', Collection::make($tags)->all()));
+
         // Header value can't exceed 16KB
         // https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/#a-few-things-to-remember
         $bytes = 0;
@@ -196,7 +185,7 @@ class StaticCaching extends \yii\base\Component
         $headers = Craft::$app->getResponse()->getHeaders();
 
         $tagsForHeader->each(fn(string $tag) => $headers->add(
-            HeaderEnum::CACHE_PURGE->value,
+            HeaderEnum::CACHE_PURGE_TAG->value,
             $tag,
         ));
     }
