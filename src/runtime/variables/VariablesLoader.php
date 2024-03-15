@@ -9,12 +9,14 @@ class VariablesLoader
     public static function load(): void
     {
         if (!file_exists(self::FILENAME)) {
+            echo 'No variables file found';
             return;
         }
 
         $vars = include self::FILENAME;
 
         if (!is_array($vars)) {
+            echo 'The variables file should be an array';
             return;
         }
 
