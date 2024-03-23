@@ -9,7 +9,6 @@
     value: fs.subpath,
     errors: fs.getErrors('subpath'),
     placeholder: "path/to/subpath"|t('cloud'),
-    tip: "This value will be appended to the **Base Path** and **Base URL** settings."|t('cloud')
 }) }}
 
 {% set cacheDurationInput %}
@@ -71,7 +70,8 @@
     value: fs.localFsPath ?? null,
     errors: fs.getErrors('localFsPath') ?? null,
     required: true,
-    placeholder: "@webroot/path/to/folder"|t('app')
+    placeholder: "@webroot/path/to/folder"|t('app'),
+    tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
 }) }}
 
 <div id="local-fs-url-field" class="{% if not fs.hasUrls %}hidden{% endif %}">
@@ -87,6 +87,7 @@
         errors: fs.getErrors('localFsUrl') ?? null,
         required: true,
         placeholder: "@web/path/to/folder",
+        tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
     }) }}
 </div>
 
@@ -94,6 +95,6 @@
     const $urlField = $(document.getElementsByName('types[craft\\cloud\\fs\\AssetsFs][hasUrls]'))
         .parent('button')
         .addClass('fieldtoggle')
-        .data({target: '#types-craft-cloud-fs-AssetsFs-local-fs-url-field'});
+        .data({target: '#types-craft-cloud-fs-AssetsFs-local-fs-url-field, #types-craft-cloud-fs-AssetsFs-cacheDuration-field'});
     new Craft.FieldToggle($urlField);
 {% endjs %}

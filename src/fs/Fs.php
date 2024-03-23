@@ -479,4 +479,21 @@ abstract class Fs extends FlysystemFs
 
         parent::deleteDirectory($path);
     }
+
+    public function replaceMetadata(string $path, array $config = []): void
+    {
+        if ($this->useLocalFs) {
+            return;
+        }
+
+        try {
+            $this->filesystem()->copy(
+                $path,
+                $path,
+                $this->addFileMetadataToConfig($config),
+            );
+        } catch (FilesystemException|UnableToCopyFile $exception) {
+            throw new FsException($exception->getMessage(), 0, $exception);
+        }
+    }
 }
