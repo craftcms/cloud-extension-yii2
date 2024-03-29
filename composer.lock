@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1518a2891f9755138fc1fa0adbd84082",
+    "content-hash": "4f0fa542e4fae8b14264716c52d5e164",
     "packages": [
         {
             "name": "99designs/http-signatures",
@@ -1112,16 +1112,16 @@
         },
         {
             "name": "craftcms/cms",
-            "version": "4.6.1",
+            "version": "4.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "562ab3515f86f083f52f094411bd0799d7608ffc"
+                "reference": "17164e79c7b3e86534491ff7687129cc1db79386"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/562ab3515f86f083f52f094411bd0799d7608ffc",
-                "reference": "562ab3515f86f083f52f094411bd0799d7608ffc",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/17164e79c7b3e86534491ff7687129cc1db79386",
+                "reference": "17164e79c7b3e86534491ff7687129cc1db79386",
                 "shasum": ""
             },
             "require": {
@@ -1224,7 +1224,7 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2024-01-16T18:07:18+00:00"
+            "time": "2024-01-23T18:59:37+00:00"
         },
         {
             "name": "craftcms/flysystem",
@@ -1336,16 +1336,16 @@
         },
         {
             "name": "craftcms/server-check",
-            "version": "2.1.7",
+            "version": "2.1.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/server-check.git",
-                "reference": "97c09a55cee207cb0a79243606354d9783d693d8"
+                "reference": "c86e8aeabc73333111e2bfb4483d7b5402232e48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/server-check/zipball/97c09a55cee207cb0a79243606354d9783d693d8",
-                "reference": "97c09a55cee207cb0a79243606354d9783d693d8",
+                "url": "https://api.github.com/repos/craftcms/server-check/zipball/c86e8aeabc73333111e2bfb4483d7b5402232e48",
+                "reference": "c86e8aeabc73333111e2bfb4483d7b5402232e48",
                 "shasum": ""
             },
             "type": "library",
@@ -1374,7 +1374,7 @@
                 "rss": "https://github.com/craftcms/server-check/releases.atom",
                 "source": "https://github.com/craftcms/server-check"
             },
-            "time": "2023-09-20T01:56:57+00:00"
+            "time": "2023-09-25T17:28:37+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
@@ -3187,16 +3187,16 @@
         },
         {
             "name": "moneyphp/money",
-            "version": "v4.3.0",
+            "version": "v4.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/moneyphp/money.git",
-                "reference": "50ddfd15b2be01d4bed3bcb0c975a6af5f78a183"
+                "reference": "5e60aebf09f709dd4ea16bf85e66d65301c0d172"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/moneyphp/money/zipball/50ddfd15b2be01d4bed3bcb0c975a6af5f78a183",
-                "reference": "50ddfd15b2be01d4bed3bcb0c975a6af5f78a183",
+                "url": "https://api.github.com/repos/moneyphp/money/zipball/5e60aebf09f709dd4ea16bf85e66d65301c0d172",
+                "reference": "5e60aebf09f709dd4ea16bf85e66d65301c0d172",
                 "shasum": ""
             },
             "require": {
@@ -3220,7 +3220,7 @@
                 "phpbench/phpbench": "^1.2.5",
                 "phpunit/phpunit": "^9.5.4",
                 "psalm/plugin-phpunit": "^0.18.4",
-                "psr/cache": "^1.0.1",
+                "psr/cache": "^1.0.1 || ^2.0 || ^3.0",
                 "vimeo/psalm": "~5.15.0"
             },
             "suggest": {
@@ -3269,9 +3269,9 @@
             ],
             "support": {
                 "issues": "https://github.com/moneyphp/money/issues",
-                "source": "https://github.com/moneyphp/money/tree/v4.3.0"
+                "source": "https://github.com/moneyphp/money/tree/v4.4.0"
             },
-            "time": "2023-11-22T09:46:30+00:00"
+            "time": "2024-01-24T08:29:16+00:00"
         },
         {
             "name": "monolog/monolog",
