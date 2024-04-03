@@ -15,7 +15,7 @@ When installed, the extension automatically [bootstraps](https://www.yiiframewor
 
 ## Installation
 
-The Cloud extension can be installed in any existing Craft 4.5+ project by running `php craft setup/cloud`. Craft will add the `craftcms/cloud` package and run the extension’s own setup wizard.
+The Cloud extension can be installed in any existing Craft 4.6+ project by running `php craft setup/cloud`. Craft will add the `craftcms/cloud` package and run the extension’s own setup wizard.
 
 > [!TIP]
 > This process includes the creation of a [`craft-cloud.yaml` configuration file](https://craftcms.com/knowledge-base/cloud-config) which helps Cloud understand your project’s structure and determines which versions of PHP and Node your project will use during builds and at runtime.

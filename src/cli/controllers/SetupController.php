@@ -147,7 +147,7 @@ class SetupController extends Controller
             ]);
         }
 
-        $output = "# Craft Cloud configuration file`\n";
+        $output = "# Craft Cloud configuration file\n";
         $output .= "# https://craftcms.com/knowledge-base/cloud-config\n";
         $output .= Yaml::dump($config, 20, 2);
 
