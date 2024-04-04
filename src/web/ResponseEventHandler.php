@@ -8,21 +8,27 @@ use craft\cloud\HeaderEnum;
 use craft\cloud\Module;
 use craft\web\Response;
 use Illuminate\Support\Collection;
-use yii\base\Behavior;
 use yii\base\Event;
 use yii\web\Response as YiiResponse;
 use yii\web\ServerErrorHttpException;
 
 /**
- * @property Response $owner
+ * @property Response $response
  */
-class ResponseBehavior extends Behavior
+class ResponseEventHandler
 {
-    public function events(): array
+    public function __construct()
     {
-        return [
-            YiiResponse::EVENT_AFTER_PREPARE => [$this, 'afterPrepare'],
-        ];
+        $this->response = Craft::$app->getResponse();
+    }
+
+    public function handle()
+    {
+        Event::on(
+            Response::class,
+            YiiResponse::EVENT_AFTER_PREPARE,
+            [$this, 'afterPrepare'],
+        );
     }
 
     public function gzip(): void
@@ -36,8 +42,8 @@ class ResponseBehavior extends Behavior
             return;
         }
 
-        $this->owner->content = gzencode($this->owner->content, 9);
-        $this->owner->getHeaders()->set('Content-Encoding', 'gzip');
+        $this->response->content = gzencode($this->response->content, 9);
+        $this->response->getHeaders()->set('Content-Encoding', 'gzip');
     }
 
     public function afterPrepare(Event $event): void
@@ -53,7 +59,7 @@ class ResponseBehavior extends Behavior
      */
     protected function serveBinaryFromS3(): void
     {
-        if (!$this->owner->stream) {
+        if (!$this->response->stream) {
             return;
         }
 
@@ -62,7 +68,7 @@ class ResponseBehavior extends Behavior
             'class' => TmpFs::class,
         ]);
 
-        $stream = $this->owner->stream[0] ?? null;
+        $stream = $this->response->stream[0] ?? null;
 
         if (!$stream) {
             throw new ServerErrorHttpException('Invalid stream in response.');
@@ -77,14 +83,14 @@ class ResponseBehavior extends Behavior
         $cmd = $fs->getClient()->getCommand('GetObject', [
             'Bucket' => $fs->getBucketName(),
             'Key' => $fs->prefixPath($path),
-            'ResponseContentDisposition' => $this->owner->getHeaders()->get('content-disposition'),
+            'ResponseContentDisposition' => $this->response->getHeaders()->get('content-disposition'),
         ]);
 
         // TODO: config
         $s3Request = $fs->getClient()->createPresignedRequest($cmd, '+20 minutes');
         $url = (string) $s3Request->getUri();
-        $this->owner->clear();
-        $this->owner->redirect($url);
+        $this->response->clear();
+        $this->response->redirect($url);
     }
 
     /**
@@ -97,7 +103,7 @@ class ResponseBehavior extends Behavior
      */
     protected function joinMultiValueHeaders(string $glue = ','): void
     {
-        Collection::make($this->owner->getHeaders())
+        Collection::make($this->response->getHeaders())
             ->reject(fn(array $values, string $name) => strcasecmp($name, 'Set-Cookie') === 0)
             ->each(function(array $values, string $name) use ($glue) {
                 $this->joinHeaderValues($name, $values, $glue);
@@ -110,7 +116,7 @@ class ResponseBehavior extends Behavior
             ->filter()
             ->join($glue);
 
-        $this->owner->getHeaders()->set($name, $value);
+        $this->response->getHeaders()->set($name, $value);
 
         return $value;
     }
@@ -118,7 +124,7 @@ class ResponseBehavior extends Behavior
     protected function addDevModeHeader(): void
     {
         if (Module::getInstance()->getConfig()->getDevMode()) {
-            $this->owner->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
+            $this->response->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
         }
     }
 }

@@ -9,7 +9,7 @@ use craft\cloud\fs\AssetsFs;
 use craft\cloud\fs\StorageFs;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\web\assets\uploader\UploaderAsset;
-use craft\cloud\web\ResponseBehavior;
+use craft\cloud\web\ResponseEventHandler;
 use craft\console\Application as ConsoleApplication;
 use craft\debug\Module as DebugModule;
 use craft\elements\Asset;
@@ -127,10 +127,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         if ($app instanceof WebApplication) {
             Craft::setAlias('@web', $app->getRequest()->getHostInfo());
 
-            $app->getResponse()->attachBehavior(
-                'cloud',
-                ResponseBehavior::class,
-            );
+            (new ResponseEventHandler())->handle();
 
             $app->getRequest()->secureHeaders = Collection::make($app->getRequest()->secureHeaders)
                 ->reject(fn(string $header) => $header === 'X-Forwarded-Host')
