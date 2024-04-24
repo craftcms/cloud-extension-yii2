@@ -10,6 +10,7 @@ use craft\cloud\queue\SqsQueue;
 use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
+use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
 use GuzzleHttp\Psr7\Request;
 use HttpSignatures\Context;
@@ -146,6 +147,12 @@ SQL;
 
             return Craft::createObject($config);
         };
+
+        $config['container']['definitions'] = [
+            MonologTarget::class => [
+                'logContext' => false,
+            ],
+        ];
     }
 
     public static function createSigningContext(iterable $headers = []): Context

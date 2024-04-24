@@ -94,11 +94,11 @@ class ResponseEventHandler
     }
 
     /**
-     * API Gateway v2 doesn't support multi-value headers,
-     * and Bref currently will truncate all but the last value.
+     * API Gateway v2, Cloudflare, and Bref all flatten multi-value headers into a CSV single string.
+     * Rather than relying on this, we join them ourselves.
      *
-     * @see https://github.com/brefphp/bref/issues/1691
      * @see https://developers.cloudflare.com/workers/runtime-apis/headers/#differences
+     * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
      * @see https://github.com/brefphp/bref/issues/1691
      */
     protected function joinMultiValueHeaders(string $glue = ','): void
