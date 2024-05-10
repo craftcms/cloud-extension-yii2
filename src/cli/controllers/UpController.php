@@ -3,6 +3,7 @@
 namespace craft\cloud\cli\controllers;
 
 use Craft;
+use craft\cloud\Module;
 use craft\console\Controller;
 use craft\events\CancelableEvent;
 use yii\console\ExitCode;
@@ -26,7 +27,7 @@ class UpController extends Controller
 
         if (Craft::$app->getIsInstalled()) {
             $this->run('/up');
-            $this->run('/clear-caches/cloud-static-caches');
+            Module::getInstance()->getStaticCache()->purgeGateway();
         }
 
         $event = new CancelableEvent();

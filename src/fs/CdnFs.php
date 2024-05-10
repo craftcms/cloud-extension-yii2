@@ -2,9 +2,9 @@
 
 namespace craft\cloud\fs;
 
-use craft\cloud\HeaderEnum;
-use craft\cloud\Helper;
-use Illuminate\Support\Collection;
+use craft\cloud\Module;
+use craft\cloud\StaticCache;
+use craft\cloud\StaticCacheTag;
 
 class CdnFs extends Fs
 {
@@ -17,9 +17,12 @@ class CdnFs extends Fs
     protected function invalidateCdnPath(string $path): bool
     {
         try {
-            Helper::makeGatewayApiRequest(Collection::make([
-                HeaderEnum::CACHE_PURGE_TAG->value => $this->prefixPath($path),
-            ]));
+            $prefix = StaticCache::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId . ':';
+            $tag = StaticCacheTag::create($this->prefixPath($path))
+                ->minify(false)
+                ->withPrefix($prefix);
+
+            Module::getInstance()->getStaticCache()->purgeTags($tag);
 
             return true;
         } catch (\Throwable $e) {

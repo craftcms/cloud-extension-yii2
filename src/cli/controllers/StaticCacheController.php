@@ -2,10 +2,8 @@
 
 namespace craft\cloud\cli\controllers;
 
-use craft\cloud\HeaderEnum;
-use craft\cloud\Helper;
+use craft\cloud\Module;
 use craft\console\Controller;
-use Illuminate\Support\Collection;
 use yii\console\ExitCode;
 
 class StaticCacheController extends Controller
@@ -13,11 +11,7 @@ class StaticCacheController extends Controller
     public function actionPurgePrefixes(string ...$prefixes): int
     {
         $this->do('Purging prefixes', function() use ($prefixes) {
-            $headers = Collection::make([
-                HeaderEnum::CACHE_PURGE_PREFIX->value => implode(',', $prefixes),
-            ]);
-
-            Helper::makeGatewayApiRequest($headers);
+            Module::getInstance()->getStaticCache()->purgeUrlPrefixes(...$prefixes);
         });
 
         return ExitCode::OK;
@@ -26,11 +20,7 @@ class StaticCacheController extends Controller
     public function actionPurgeTags(string ...$tags): int
     {
         $this->do('Purging tags', function() use ($tags) {
-            $headers = Collection::make([
-                HeaderEnum::CACHE_PURGE_TAG->value => implode(',', $tags),
-            ]);
-
-            Helper::makeGatewayApiRequest($headers);
+            Module::getInstance()->getStaticCache()->purgeTags(...$tags);
         });
 
         return ExitCode::OK;

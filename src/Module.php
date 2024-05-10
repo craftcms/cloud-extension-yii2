@@ -20,10 +20,8 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\imagetransforms\FallbackTransformer;
 use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
-use craft\services\Elements;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
-use craft\utilities\ClearCaches;
 use craft\web\Application as WebApplication;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
@@ -122,16 +120,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         // Set Craft memory limit to just below PHP's limit
         Helper::setMemoryLimit(ini_get('memory_limit'), $app->getErrorHandler()->memoryReserveSize);
 
-        if ($app instanceof WebApplication) {
-            Craft::setAlias('@web', $app->getRequest()->getHostInfo());
-
-            (new ResponseEventHandler())->handle();
-
-            $app->getRequest()->secureHeaders = Collection::make($app->getRequest()->secureHeaders)
-                ->reject(fn(string $header) => $header === 'X-Forwarded-Host')
-                ->all();
-        }
-
         Craft::$container->set(
             Temp::class,
             TmpFs::class,
@@ -155,6 +143,17 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         ]);
 
         $this->registerCloudEventHandlers();
+
+        if ($app instanceof WebApplication) {
+            Craft::setAlias('@web', $app->getRequest()->getHostInfo());
+
+            $app->getRequest()->secureHeaders = Collection::make($app->getRequest()->secureHeaders)
+                ->reject(fn(string $header) => $header === 'X-Forwarded-Host')
+                ->all();
+
+            // Important this gets called last so multi-value headers aren't prematurely joined
+            (new ResponseEventHandler())->handle();
+        }
     }
 
     protected function registerGlobalEventHandlers(): void
@@ -196,29 +195,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
     protected function registerCloudEventHandlers(): void
     {
-        Event::on(
-            View::class,
-            View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE,
-            [$this->get('staticCache'), 'handleBeforeRenderPageTemplate'],
-        );
-
-        Event::on(
-            View::class,
-            View::EVENT_AFTER_RENDER_PAGE_TEMPLATE,
-            [$this->get('staticCache'), 'handleAfterRenderPageTemplate'],
-        );
-
-        Event::on(
-            Elements::class,
-            Elements::EVENT_INVALIDATE_CACHES,
-            [$this->get('staticCache'), 'handleInvalidateCaches'],
-        );
-
-        Event::on(
-            ClearCaches::class,
-            ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
-            [$this->get('staticCache'), 'handleRegisterCacheOptions'],
-        );
+        $this->getStaticCache()->registerEventHandlers();
 
         Event::on(
             Asset::class,
