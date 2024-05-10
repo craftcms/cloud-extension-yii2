@@ -37,6 +37,7 @@ class StaticCache extends \yii\base\Component
     private ?int $cacheDuration = null;
     private Collection $tags;
     private Collection $tagsToPurge;
+    private bool $collectingCacheInfo = false;
 
     public function init(): void
     {
@@ -102,6 +103,7 @@ class StaticCache extends \yii\base\Component
         }
 
         Craft::$app->getElements()->startCollectingCacheInfo();
+        $this->collectingCacheInfo = true;
     }
 
     public function handleAfterPrepareWebResponse(Event $event): void
@@ -110,14 +112,15 @@ class StaticCache extends \yii\base\Component
             return;
         }
 
-        /** @var TagDependency|null $dependency */
-        /** @var int|null $duration */
-        [$dependency, $duration] = Craft::$app->getElements()->stopCollectingCacheInfo();
-        $tags = $dependency?->tags ?? [];
-        $this->tags->push(...$tags);
-
-        // Don't override the cache duration if it's already set
-        $this->cacheDuration = $this->cacheDuration ?? $duration;
+        if ($this->collectingCacheInfo) {
+            /** @var TagDependency|null $dependency */
+            /** @var int|null $duration */
+            [$dependency, $duration] = Craft::$app->getElements()->stopCollectingCacheInfo();
+            $this->collectingCacheInfo = false;
+            $tags = $dependency?->tags ?? [];
+            $this->tags->push(...$tags);
+            $this->cacheDuration = $duration;
+        }
 
         $this->addCacheHeadersToWebResponse();
     }
@@ -217,7 +220,6 @@ class StaticCache extends \yii\base\Component
         $headers->remove(HeaderEnum::CACHE_TAG->value);
         $this->tags = $this->tags->push(...$existingTagsFromHeader);
 
-        // TODO: should I reassign this back to $this->tags with prepared values?
         // Header value can't exceed 16KB
         // https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/#a-few-things-to-remember
         $this->prepareTags(...$this->tags)
