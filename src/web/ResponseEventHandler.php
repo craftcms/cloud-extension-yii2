@@ -12,11 +12,10 @@ use yii\base\Event;
 use yii\web\Response as YiiResponse;
 use yii\web\ServerErrorHttpException;
 
-/**
- * @property Response $response
- */
 class ResponseEventHandler
 {
+    protected Response $response;
+
     public function __construct()
     {
         $this->response = Craft::$app->getResponse();
@@ -38,7 +37,7 @@ class ResponseEventHandler
             Craft::$app->getRequest()->getHeaders()->get('Accept-Encoding') ?? ''
         );
 
-        if (Collection::make($accepts)->doesntContain('gzip')) {
+        if (Collection::make($accepts)->doesntContain('gzip') || $this->response->content === null) {
             return;
         }
 
