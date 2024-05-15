@@ -90,6 +90,10 @@ class ResponseEventHandler
         $s3Request = $fs->getClient()->createPresignedRequest($cmd, '+20 minutes');
         $url = (string) $s3Request->getUri();
         $this->response->clear();
+
+        // Don't cache the redirect, as its validity is short-lived.
+        $this->response->setNoCacheHeaders();
+
         $this->response->redirect($url);
     }
 
