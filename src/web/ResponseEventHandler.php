@@ -88,12 +88,18 @@ class ResponseEventHandler
         // TODO: config
         $s3Request = $fs->getClient()->createPresignedRequest($cmd, '+20 minutes');
         $url = (string) $s3Request->getUri();
+
+        // Clear response so stream is reset and we don't recursively call this method.
         $this->response->clear();
 
         // Don't cache the redirect, as its validity is short-lived.
         $this->response->setNoCacheHeaders();
 
         $this->response->redirect($url);
+
+        // Ensure we don't recursively call send()
+        // @see https://github.com/craftcms/cms/pull/15014
+        Craft::$app->end();
     }
 
     /**
