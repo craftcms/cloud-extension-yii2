@@ -19,14 +19,14 @@ class SqsQueue extends \yii\queue\sqs\Queue
          * the job will exist and be indefinitely pending.
          */
         Craft::$app->getDb()->onAfterTransaction(function() use ($message, $ttr, $delay) {
+            return parent::pushMessage(
+                $message,
+                $ttr,
+                $delay,
 
-            /**
-             * @phpstan-ignore-next-line
-             * @see https://github.com/yiisoft/yii2-queue/pull/502
-             *
-             * Priority is not supported by SQS
-             */
-            return parent::pushMessage($message, (string) $ttr, $delay, null);
+                // Priority is not supported by SQS
+                null,
+            );
         });
 
         // Return anything but null, as we don't have an SQS message ID yet.

@@ -3,6 +3,7 @@
 namespace craft\cloud;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\events\ElementEvent;
 use craft\events\InvalidateElementCachesEvent;
 use craft\events\RegisterCacheOptionsEvent;
@@ -74,13 +75,13 @@ class StaticCache extends \yii\base\Component
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_SAVE_ELEMENT,
-            [$this, 'handleUpdateElement'],
+            [$this, 'handleSaveElement'],
         );
 
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_DELETE_ELEMENT,
-            [$this, 'handleUpdateElement'],
+            [$this, 'handleDeleteElement'],
         );
 
         Event::on(
@@ -158,23 +159,14 @@ class StaticCache extends \yii\base\Component
         ];
     }
 
-    public function handleUpdateElement(ElementEvent $event): void
+    public function handleSaveElement(ElementEvent $event): void
     {
-        $element = $event->element;
+        $this->purgeElementUri($event->element);
+    }
 
-        if (!$element->uri || ElementHelper::isDraftOrRevision($element)) {
-            return;
-        }
-
-        $uri = $element->getIsHomepage()
-            ? '/'
-            : Path::new($element->uri)->withLeadingSlash()->withoutTrailingSlash();
-
-        $tag = StaticCacheTag::create($uri)
-            ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
-            ->minify(false);
-
-        $this->tagsToPurge->prepend($tag);
+    public function handleDeleteElement(ElementEvent $event): void
+    {
+        $this->purgeElementUri($event->element);
     }
 
     public function purgeAll(): void
@@ -199,6 +191,23 @@ class StaticCache extends \yii\base\Component
         )->withPrefix(self::CDN_PREFIX)->minify(false);
 
         $this->tagsToPurge->push($tag);
+    }
+
+    private function purgeElementUri(ElementInterface $element): void
+    {
+        if (ElementHelper::isDraftOrRevision($element) || !$element->uri) {
+            return;
+        }
+
+        $uri = $element->getIsHomepage()
+            ? '/'
+            : Path::new($element->uri)->withLeadingSlash()->withoutTrailingSlash();
+
+        $tag = StaticCacheTag::create($uri)
+            ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
+            ->minify(false);
+
+        $this->tagsToPurge->prepend($tag);
     }
 
     private function addCacheHeadersToWebResponse(): void
