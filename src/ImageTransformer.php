@@ -6,7 +6,6 @@ use Craft;
 use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\elements\Asset;
-use craft\errors\ImageTransformException;
 use craft\helpers\Assets;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -75,25 +74,27 @@ class ImageTransformer extends Component implements ImageTransformerInterface
 
         // TODO: maybe just do this in Craft
         $parts = explode('-', $imageTransform->position);
-        $yPosition = $parts[0] ?? null;
-        $xPosition = $parts[1] ?? null;
 
         try {
-            $x = match ($xPosition) {
-                'top' => 0,
+            $x = match ($parts[0] ?? null) {
+                'left' => 0,
                 'center' => 0.5,
-                'bottom' => 1,
+                'right' => 1,
             };
-            $y = match ($yPosition) {
+            $y = match ($parts[1] ?? null) {
                 'top' => 0,
                 'center' => 0.5,
                 'bottom' => 1,
             };
         } catch (\UnhandledMatchError $e) {
-            throw new ImageTransformException('Invalid `position` value.');
+            Craft::warning("Invalid position value: `{$imageTransform->position}`");
+            return null;
         }
 
-        return [$x, $y];
+        return [
+            'x' => $x,
+            'y' => $y,
+        ];
     }
 
     protected function getBackgroundValue(ImageTransform $imageTransform): ?string
