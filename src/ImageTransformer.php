@@ -76,12 +76,12 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $parts = explode('-', $imageTransform->position);
 
         try {
-            $x = match ($parts[0] ?? null) {
+            $x = match ($parts[1] ?? null) {
                 'left' => 0,
                 'center' => 0.5,
                 'right' => 1,
             };
-            $y = match ($parts[1] ?? null) {
+            $y = match ($parts[0] ?? null) {
                 'top' => 0,
                 'center' => 0.5,
                 'bottom' => 1,
