@@ -4,7 +4,6 @@ namespace craft\cloud\runtime\event;
 
 use Bref\Context\Context;
 use Bref\Event\Handler;
-use craft\cloud\Module;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
@@ -12,7 +11,8 @@ use yii\base\Exception;
 
 class CliHandler implements Handler
 {
-    public const MAX_EXECUTION_BUFFER_SECONDS = 5;
+    public const MAX_EXECUTION_SECONDS = 900;
+    public const MAX_EXECUTION_BUFFER_SECONDS = 3;
     public ?Process $process = null;
     protected string $scriptPath = '/var/task/craft';
     protected ?float $totalRunningTime = null;
@@ -80,8 +80,11 @@ class CliHandler implements Handler
 
     public function shouldRetry(): bool
     {
-        $diff = Module::getInstance()->getConfig()->getMaxSeconds() - $this->getTotalRunningTime();
+        return $this->getTotalRunningTime() < static::maxExecutionSeconds();
+    }
 
-        return $diff > static::MAX_EXECUTION_BUFFER_SECONDS;
+    public static function maxExecutionSeconds(): int
+    {
+        return static::MAX_EXECUTION_SECONDS - self::MAX_EXECUTION_BUFFER_SECONDS;
     }
 }
