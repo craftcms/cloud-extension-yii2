@@ -6,6 +6,7 @@ use Craft;
 use craft\config\BaseConfig;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
+use craft\helpers\DateTimeHelper;
 use League\Uri\Contracts\UriInterface;
 use League\Uri\Uri;
 
@@ -28,6 +29,7 @@ class Config extends BaseConfig
     public bool $useAssetBundleCdn = true;
     public ?string $previewDomain = null;
     public bool $useQueue = true;
+    public int $staticCacheDuration = DateTimeHelper::SECONDS_YEAR;
     public ?string $storageEndpoint = null;
     protected bool $devMode = false;
     protected ?string $region = null;

@@ -212,7 +212,7 @@ class StaticCache extends \yii\base\Component
 
     private function addCacheHeadersToWebResponse(): void
     {
-        $this->cacheDuration = $this->cacheDuration ?? Craft::$app->getConfig()->getGeneral()->cacheDuration;
+        $this->cacheDuration = $this->cacheDuration ?? Module::getInstance()->getConfig()->staticCacheDuration;
         $headers = Craft::$app->getResponse()->getHeaders();
 
         Craft::info(new PsrMessage('Setting cache headers', [
