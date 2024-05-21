@@ -8,6 +8,7 @@ use craft\base\Model;
 use craft\cloud\fs\AssetsFs;
 use craft\cloud\fs\StorageFs;
 use craft\cloud\fs\TmpFs;
+use craft\cloud\twig\TwigExtension;
 use craft\cloud\web\assets\uploader\UploaderAsset;
 use craft\cloud\web\ResponseEventHandler;
 use craft\console\Application as ConsoleApplication;
@@ -23,7 +24,6 @@ use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
 use craft\web\Application as WebApplication;
-use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
@@ -36,32 +36,23 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     private Config $_config;
 
     /**
-     * @inheritDoc
      * @throws InvalidConfigException
+     * @param WebApplication|ConsoleApplication $app
+     * @inheritDoc
      */
-    public function init(): void
+    public function bootstrap($app): void
     {
-        parent::init();
-
         $this->id = $this->id ?? 'cloud';
 
         // Set instance early so our dependencies can use it
         self::setInstance($this);
 
-        $this->controllerNamespace = Craft::$app->getRequest()->getIsConsoleRequest()
+        $this->controllerNamespace = $app->getRequest()->getIsConsoleRequest()
             ? 'craft\\cloud\\cli\\controllers'
             : 'craft\\cloud\\controllers';
 
         $this->registerGlobalEventHandlers();
         $this->validateConfig();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function bootstrap($app): void
-    {
-        /** @var WebApplication|ConsoleApplication $app */
 
         // Required for controllers to be found
         $app->setModule($this->id, $this);
@@ -179,16 +170,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
             function(RegisterTemplateRootsEvent $e) {
                 $e->roots[$this->id] = sprintf('%s/templates', $this->getBasePath());
-            }
-        );
-
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function(\yii\base\Event $e) {
-                /** @var CraftVariable $craftVariable */
-                $craftVariable = $e->sender;
-                $craftVariable->set('cloud', Module::class);
             }
         );
     }

@@ -1,9 +1,11 @@
 <?php
 
-namespace craft\cloud;
+namespace craft\cloud\web;
 
 use Craft;
 use craft\cloud\fs\CpResourcesFs;
+use craft\cloud\Helper;
+use craft\cloud\Module;
 use craft\helpers\FileHelper;
 use League\Uri\Modifier;
 

@@ -8,6 +8,7 @@ use craft\cloud\fs\BuildArtifactsFs;
 use craft\cloud\Helper as CloudHelper;
 use craft\cloud\queue\SqsQueue;
 use craft\cloud\runtime\event\CliHandler;
+use craft\cloud\web\AssetManager;
 use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;

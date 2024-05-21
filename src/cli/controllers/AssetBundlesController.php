@@ -3,9 +3,9 @@
 namespace craft\cloud\cli\controllers;
 
 use Craft;
-use craft\cloud\AssetManager;
 use craft\cloud\cli\AssetBundlePublisher;
 use craft\cloud\Composer;
+use craft\cloud\web\AssetManager;
 use craft\console\Controller;
 use craft\helpers\App;
 use ReflectionClass;
