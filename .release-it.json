@@ -1,7 +1,4 @@
 {
-  "git": {
-    "commit": false
-  },
   "npm": {
     "publish": false
   },
