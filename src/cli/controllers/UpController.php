@@ -6,6 +6,7 @@ use Craft;
 use craft\cloud\Module;
 use craft\console\Controller;
 use craft\events\CancelableEvent;
+use yii\console\Exception;
 use yii\console\ExitCode;
 
 class UpController extends Controller
@@ -22,11 +23,11 @@ class UpController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $this->run('/setup/php-session-table');
-        $this->run('/setup/db-cache-table');
+        $this->mustRun('/setup/php-session-table');
+        $this->mustRun('/setup/db-cache-table');
 
         if (Craft::$app->getIsInstalled()) {
-            $this->run('/up');
+            $this->mustRun('/up');
             Module::getInstance()->getStaticCache()->purgeGateway();
         }
 
@@ -38,5 +39,14 @@ class UpController extends Controller
         }
 
         return ExitCode::OK;
+    }
+
+    private function mustRun(string $route): void
+    {
+        $exitCode = $this->run($route);
+
+        if ($exitCode !== ExitCode::OK) {
+            throw new Exception("Exit code \"$exitCode\" returned from \"{$route}\"");
+        }
     }
 }
