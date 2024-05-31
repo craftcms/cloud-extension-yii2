@@ -7,6 +7,8 @@ use craft\cloud\fs\CpResourcesFs;
 use craft\cloud\Helper;
 use craft\cloud\Module;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
+use League\Uri\Components\HierarchicalPath;
 use League\Uri\Modifier;
 
 class AssetManager extends \craft\web\AssetManager
@@ -41,6 +43,16 @@ class AssetManager extends \craft\web\AssetManager
     protected function hash($path): string
     {
         $dir = is_file($path) ? dirname($path) : $path;
+        $rebrandPath = Craft::$app->getPath()->getRebrandPath();
+
+        // Account for rebrand, as it lives in @storage by default,
+        // which will be different in Cloud runtime vs. Cloud build.
+        if (str_starts_with($dir, $rebrandPath)) {
+            return HierarchicalPath::new(StringHelper::removeLeft($dir, $rebrandPath))
+                ->prepend('rebrand')
+                ->withoutTrailingSlash()
+                ->toString();
+        }
 
         // @phpstan-ignore-next-line
         $alias = Craft::alias($dir);

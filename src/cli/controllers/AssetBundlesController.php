@@ -27,6 +27,7 @@ class AssetBundlesController extends Controller
 
     public function beforeAction($action): bool
     {
+        // Don't allow if ephemeral, as the publish command won't create any files
         if (App::isEphemeral()) {
             throw new Exception('Asset bundle publishing is not supported in ephemeral environments.');
         }
