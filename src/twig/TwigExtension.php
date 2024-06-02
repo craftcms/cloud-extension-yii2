@@ -30,11 +30,6 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
      */
     public function isCraftCloud(): bool
     {
-        Craft::$app->getDeprecator()->log(
-            __METHOD__,
-            'The `isCraftCloud` Twig global has been deprecated. Use `cloud.isCraftCloud` instead.',
-        );
-
         return Helper::isCraftCloud();
     }
 
