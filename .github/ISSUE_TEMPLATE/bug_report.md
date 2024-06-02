@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report an issue or unexpected behavior with the `craftcms/cloud` extension.
+about: Report an issue or unexpected behavior with the craftcms/cloud extension.
 labels:
   - bug # Linear
   - Cloud Extension # Linear
