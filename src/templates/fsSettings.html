@@ -59,6 +59,23 @@
     </blockquote>
 </div>
 
+<div id="local-fs-url-field" class="field {% if not fs.hasUrls %}hidden{% endif %}">
+    {{ forms.autosuggestField({
+    label: "Base URL"|t('app'),
+    instructions: "The base URL to the files in this filesystem."|t('app'),
+    id: 'local-fs-url',
+    class: ['ltr', 'fs-url'],
+    name: 'localFsUrl',
+    suggestEnvVars: true,
+    suggestAliases: true,
+    value: fs.localFsUrl ?? null,
+    errors: fs.getErrors('localFsUrl') ?? null,
+    required: true,
+    placeholder: "@web/path/to/folder",
+    tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
+    }) }}
+</div>
+
 {{ forms.autosuggestField({
     label: "Base Path"|t('app'),
     instructions: "The base folder path that should be used as the root of the filesystem."|t('app'),
@@ -73,23 +90,6 @@
     placeholder: "@webroot/path/to/folder"|t('app'),
     tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
 }) }}
-
-<div id="local-fs-url-field" class="{% if not fs.hasUrls %}hidden{% endif %}">
-    {{ forms.autosuggestField({
-        label: "Base URL"|t('app'),
-        instructions: "The base URL to the files in this filesystem."|t('app'),
-        id: 'local-fs-url',
-        class: ['ltr', 'fs-url'],
-        name: 'localFsUrl',
-        suggestEnvVars: true,
-        suggestAliases: true,
-        value: fs.localFsUrl ?? null,
-        errors: fs.getErrors('localFsUrl') ?? null,
-        required: true,
-        placeholder: "@web/path/to/folder",
-        tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
-    }) }}
-</div>
 
 {% js %}
     const $urlField = $(document.getElementsByName('types[craft\\cloud\\fs\\AssetsFs][hasUrls]'))
