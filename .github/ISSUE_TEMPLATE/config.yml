@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Craft Cloud Issue
-    url: support@craft.cloud
+    url: https://craftcms.com/support-services
     about: Report a issue with Craft Cloud
   - name: Feature Request
     url: https://github.com/craftcms/cloud/discussions/new?category=feature-requests-enhancements
