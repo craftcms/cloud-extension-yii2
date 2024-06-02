@@ -30,13 +30,13 @@ When setting up your project’s assets, use the provided **Craft Cloud** filesy
 
 ### Template Helpers
 
-#### `artifactUrl()`
+#### `cloud.artifactUrl()`
 
 Generates a URL to a resource that was uploaded to the CDN during the build and deployment process.
 
 ```twig
 {# Output a script tag with a build-specific URL: #}
-<script src="{{ artifactUrl('dist/js/app.js') }}"></script>
+<script src="{{ cloud.artifactUrl('dist/js/app.js') }}"></script>
 
 {# You can also use the extension-provided alias: #}
 {% js '@artifactBaseUrl/dist/js/app.js' %}
@@ -44,12 +44,12 @@ Generates a URL to a resource that was uploaded to the CDN during the build and 
 
 Read more about [how to use artifact URLs](https://craftcms.com/knowledge-base/cloud-builds#artifact-uRLs).
 
-#### `isCraftCloud`
+#### `cloud.isCraftCloud`
 
 `true` when the app detects it is running on Cloud infrastructure, `false` otherwise.
 
 ```twig
-{% if isCraftCloud %}
+{% if cloud.isCraftCloud %}
   Welcome to Cloud!
 {% endif %}
 ```
@@ -64,7 +64,7 @@ On Cloud, the `@web` alias is guaranteed to be the correct environment URL for e
 
 #### `@artifactBaseUrl`
 
-Equivalent to [`artifactUrl()`](#artifactUrl), this allows [Project Config](https://craftcms.com/docs/4.x/project-config.html) settings to take advantage of dynamic, build-specific CDN URLs.
+Equivalent to [`cloud.artifactUrl()`](#artifactUrl), this allows [Project Config](https://craftcms.com/docs/4.x/project-config.html) settings to take advantage of dynamic, build-specific CDN URLs.
 
 ## Configuration
 
