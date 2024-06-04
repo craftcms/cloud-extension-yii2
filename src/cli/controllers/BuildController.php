@@ -2,36 +2,53 @@
 
 namespace craft\cloud\cli\controllers;
 
+use Composer\Semver\Semver;
 use Craft;
 use craft\console\Controller;
-use Illuminate\Support\Collection;
-use samdark\log\PsrMessage;
-use yii\console\ExitCode;
+use craft\helpers\App;
+use yii\console\Exception;
 
 class BuildController extends Controller
 {
-    public function actionIndex(string $json): int
+    public $defaultAction = 'build';
+    public ?string $publishAssetBundlesTo = null;
+    public string $craftEdition = '';
+
+    public function options($actionID): array
     {
-        $options = json_decode($json, true);
-        $exitCode = ExitCode::OK;
+        return array_merge(parent::options($actionID), [
+            'publishAssetBundlesTo',
+            'craftEdition',
+        ]);
+    }
 
-        Collection::make([
-            'cloud/validate/project-type',
-            'cloud/asset-bundles/publish',
-        ])->each(function(string $command) use ($options, &$exitCode) {
-            $params = $options[$command] ?? [];
-            $exitCode = $this->run("/$command", $params);
+    public function actionBuild(): int
+    {
+        $this->validateEdition($this->craftEdition);
 
-            if ($exitCode !== ExitCode::OK) {
-                Craft::error(new PsrMessage('Command failed.', [
-                    'command' => $command,
-                    'params' => $params,
-                ]));
+        return $this->run('/cloud/asset-bundles/publish', [
+            'to' => $this->publishAssetBundlesTo,
+        ]);
+    }
 
-                return false;
-            }
-        });
+    private function validateEdition(string $edition): void
+    {
+        $craftVersion = Craft::$app->getVersion();
+        $editionFromEnv = App::env('CRAFT_EDITION');
 
-        return $exitCode;
+        // CRAFT_EDITION is enforced in these versions, so we don't need to validate
+        if ($editionFromEnv && Semver::satisfies($craftVersion, '^4.10 || ^5.2')) {
+            return;
+        }
+
+        $editionFromProjectConfig = Craft::$app->getProjectConfig()->get('system.edition', true);
+
+        if (!$editionFromProjectConfig || !$edition) {
+            throw new Exception('Unable to determine the Craft CMS edition.');
+        }
+
+        if ($edition !== $editionFromProjectConfig) {
+            throw new Exception("This Craft Cloud project is only valid for the Craft CMS edition “{$edition}”.");
+        }
     }
 }

@@ -177,16 +177,6 @@ SQL;
         return rtrim($base64Url, '=');
     }
 
-    public static function validateProjectTypeForEdition(string $projectType, string $edition): bool
-    {
-        // TODO: replace with enums
-        if (!$edition || ($projectType === 'team' && $edition === 'pro')) {
-            return false;
-        }
-
-        return true;
-    }
-
     public static function makeGatewayApiRequest(iterable $headers): ResponseInterface
     {
         if (!Helper::isCraftCloud()) {
