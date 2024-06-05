@@ -125,7 +125,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
 
         return match ($imageTransform->format) {
             'jpg' => 'jpeg',
-            default => $imageTransform->format ?? 'auto',
+            default => $imageTransform->format,
         };
     }
 
