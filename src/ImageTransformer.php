@@ -117,7 +117,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         };
     }
 
-    protected function getFormatValue(ImageTransform $imageTransform): string
+    protected function getFormatValue(ImageTransform $imageTransform): ?string
     {
         if ($imageTransform->format === 'jpg' && $imageTransform->interlace === 'none') {
             return 'baseline-jpeg';
