@@ -237,6 +237,8 @@ class StaticCache extends \yii\base\Component
         Craft::info(new PsrMessage('Adding cache tags to headers', [
             'tags' => $tags->join(','),
         ]));
+
+        $headers->set(HeaderEnum::CACHE_TAG->value, 'element,element::craft\\elements\\GlobalSet,element::craft\\elements\\GlobalSet::*,element::verbb\\navigation\\elements\\Node,element::verbb\\navigation\\elements\\Node::*');
     }
 
     public function purgeTags(string|StaticCacheTag ...$tags): void
