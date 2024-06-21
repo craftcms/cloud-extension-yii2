@@ -28,14 +28,17 @@ class TestController extends Controller
         return $this->asJson($data);
     }
 
-    public function actionHeaderLimit(int $limit = 1): Response
+    public function actionHeaderLimit(int $limit = 1, string $char = 'a'): Response
     {
-        $value = str_repeat('a', $limit);
+        $value = str_repeat($char, $limit);
         Craft::$app->getResponse()->getHeaders()->set(
             HeaderEnum::CACHE_TAG->value,
             $value,
         );
 
-        return $this->asJson($value);
+        return $this->asJson([
+            'limit' => $limit,
+            'char' => $char,
+        ]);
     }
 }
