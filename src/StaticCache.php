@@ -238,7 +238,7 @@ class StaticCache extends \yii\base\Component
             'tags' => $tags->join(','),
         ]));
 
-        $headers->set(HeaderEnum::CACHE_TAG->value, ':');
+        $headers->set(HeaderEnum::CACHE_TAG->value, str_repeat('a', 60000));
     }
 
     public function purgeTags(string|StaticCacheTag ...$tags): void
