@@ -123,7 +123,7 @@ class StaticCache extends \yii\base\Component
             $this->cacheDuration = $duration;
         }
 
-        // $this->addCacheHeadersToWebResponse();
+        $this->addCacheHeadersToWebResponse();
     }
 
     public function handleBeforeRenderPageTemplate(TemplateEvent $event): void
