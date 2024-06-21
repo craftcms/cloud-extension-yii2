@@ -229,18 +229,14 @@ class StaticCache extends \yii\base\Component
         $headers->remove(HeaderEnum::CACHE_TAG->value);
         $this->tags = $this->tags->push(...$existingTagsFromHeader);
 
-        Craft::info(new PsrMessage('Adding cache tags to headers', [
-            'tags' => $this->tags->all(),
-        ]));
-
         // Header value can't exceed 16KB
         // https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/#a-few-things-to-remember
-        $this->prepareTags(...$this->tags)
-            ->tap(fn(Collection $tags) => $this->limitTagsToBytes(16 * 1024, ...$tags))
-            ->each(fn(string $tag) => $headers->add(
-                HeaderEnum::CACHE_TAG->value,
-                $tag,
-            ));
+        $tags = $this->prepareTags(...$this->tags)
+            ->tap(fn(Collection $tags) => $this->limitTagsToBytes(16 * 1024, ...$tags));
+
+        Craft::info(new PsrMessage('Adding cache tags to headers', [
+            'tags' => $tags->join(','),
+        ]));
     }
 
     public function purgeTags(string|StaticCacheTag ...$tags): void
