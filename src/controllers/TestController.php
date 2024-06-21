@@ -2,6 +2,8 @@
 
 namespace craft\cloud\controllers;
 
+use Craft;
+use craft\cloud\HeaderEnum;
 use craft\web\Controller;
 use yii\web\Response;
 
@@ -24,5 +26,16 @@ class TestController extends Controller
     {
         $data = str_repeat('a', PHP_INT_MAX);
         return $this->asJson($data);
+    }
+
+    public function actionHeaderLimit(int $limit = 1): Response
+    {
+        $value = str_repeat('a', $limit);
+        Craft::$app->getResponse()->getHeaders()->set(
+            HeaderEnum::CACHE_TAG->value,
+            $value,
+        );
+
+        return $this->asJson($value);
     }
 }
