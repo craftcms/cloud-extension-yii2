@@ -25,9 +25,10 @@ class StaticCacheTag implements \Stringable
 
     public function getValue(): string
     {
+        $this->removeNonPrintableChars();
+
         if ($this->minify && !Module::getInstance()->getConfig()->getDevMode()) {
             return $this
-                ->removeNonPrintableChars()
                 ->hash()
                 ->withPrefix(Module::getInstance()->getConfig()->getShortEnvironmentId())
                 ->value;
