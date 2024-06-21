@@ -49,7 +49,7 @@ class ResponseEventHandler
     {
         $this->addDevModeHeader();
         $this->joinMultiValueHeaders();
-        // $this->gzip();
+        $this->gzip();
         $this->serveBinaryFromS3();
     }
 

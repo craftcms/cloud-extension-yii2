@@ -25,6 +25,7 @@ class StaticCacheTag implements \Stringable
 
     public function getValue(): string
     {
+        // If an unprintable character is in a header value, Lambda will die with a 502.
         $this->removeNonPrintableChars();
 
         if ($this->minify && !Module::getInstance()->getConfig()->getDevMode()) {
