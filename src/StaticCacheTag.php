@@ -25,9 +25,10 @@ class StaticCacheTag implements \Stringable
 
     public function getValue(): string
     {
-        if ($this->minify && !Module::getInstance()->getConfig()->getDevMode()) {
+        $this->removeInvalidCharacters();
+
+        if ($this->minify) {
             return $this
-                ->removeNonPrintableChars()
                 ->hash()
                 ->withPrefix(Module::getInstance()->getConfig()->getShortEnvironmentId())
                 ->value;
@@ -50,9 +51,12 @@ class StaticCacheTag implements \Stringable
         return $this;
     }
 
-    private function removeNonPrintableChars(): self
+    private function removeInvalidCharacters(): self
     {
-        $this->value = preg_replace('/[^[:print:]]/', '', $this->value);
+        // Filter non-ASCII characters and asterisks, as these will tags end up in headers.
+        // Asterisks should be valid, but Lambda mysteriously dies
+        // with a 502 if they're present in the value of a response header.
+        $this->value = preg_replace('/[^\x00-\x7F]|\*/', '', $this->value);
 
         return $this;
     }

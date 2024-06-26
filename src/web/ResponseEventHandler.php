@@ -7,6 +7,7 @@ use craft\cloud\fs\TmpFs;
 use craft\cloud\HeaderEnum;
 use craft\cloud\Module;
 use craft\web\Response;
+use GuzzleHttp\Psr7\Header;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\web\Response as YiiResponse;
@@ -14,23 +15,41 @@ use yii\web\ServerErrorHttpException;
 
 class ResponseEventHandler
 {
-    protected Response $response;
+    private Response $response;
 
     public function __construct()
     {
         $this->response = Craft::$app->getResponse();
     }
 
-    public function handle()
+    public function handle(): void
     {
         Event::on(
             Response::class,
             YiiResponse::EVENT_AFTER_PREPARE,
-            [$this, 'afterPrepare'],
+            fn(Event $event) => $this->afterPrepare($event),
         );
     }
 
-    public function gzip(): void
+    private function afterPrepare(Event $event): void
+    {
+        if (Module::getInstance()->getConfig()->getDevMode()) {
+            $this->addDevModeHeader();
+        }
+
+        $this->normalizeHeaders();
+        // $this->joinMultiValueHeaders();
+
+        if (Module::getInstance()->getConfig()->gzipResponse) {
+            $this->gzipResponse();
+        }
+
+        if ($this->response->stream) {
+            $this->serveBinaryFromS3();
+        }
+    }
+
+    private function gzipResponse(): void
     {
         $accepts = preg_split(
             '/\s*\,\s*/',
@@ -45,28 +64,11 @@ class ResponseEventHandler
         $this->response->getHeaders()->set('Content-Encoding', 'gzip');
     }
 
-    public function afterPrepare(Event $event): void
-    {
-        $this->addDevModeHeader();
-        $this->joinMultiValueHeaders();
-        $this->gzip();
-        $this->serveBinaryFromS3();
-    }
-
     /**
      * @throws ServerErrorHttpException
      */
-    protected function serveBinaryFromS3(): void
+    private function serveBinaryFromS3(): void
     {
-        if (!$this->response->stream) {
-            return;
-        }
-
-        /** @var TmpFs $fs */
-        $fs = Craft::createObject([
-            'class' => TmpFs::class,
-        ]);
-
         $stream = $this->response->stream[0] ?? null;
 
         if (!$stream) {
@@ -74,6 +76,11 @@ class ResponseEventHandler
         }
 
         $path = uniqid('binary', true);
+
+        /** @var TmpFs $fs */
+        $fs = Craft::createObject([
+            'class' => TmpFs::class,
+        ]);
 
         // TODO: set expiry
         $fs->writeFileFromStream($path, $stream);
@@ -85,7 +92,7 @@ class ResponseEventHandler
             'ResponseContentDisposition' => $this->response->getHeaders()->get('content-disposition'),
         ]);
 
-        // TODO: config
+        // TODO: expiry config
         $s3Request = $fs->getClient()->createPresignedRequest($cmd, '+20 minutes');
         $url = (string) $s3Request->getUri();
 
@@ -102,6 +109,26 @@ class ResponseEventHandler
         Craft::$app->end();
     }
 
+    private function normalizeHeaders(): void
+    {
+        Collection::make($this->response->getHeaders())
+            ->each(function(array $values, string $name) {
+                if (HeaderEnum::SET_COOKIE->matches($name)) {
+                    return;
+                }
+
+                $value = $this->joinHeaderValues($values);
+
+                // Header value can't exceed 16KB
+                // https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/#a-few-things-to-remember
+                if (HeaderEnum::CACHE_TAG->matches($name)) {
+                    $value = $this->limitHeaderToBytes($value, 16 * 1024);
+                }
+
+                $this->response->getHeaders()->set($name, $value);
+            });
+    }
+
     /**
      * API Gateway v2, Cloudflare, and Bref all flatten multi-value headers into a CSV single string.
      * Rather than relying on this, we join them ourselves.
@@ -110,30 +137,30 @@ class ResponseEventHandler
      * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
      * @see https://github.com/brefphp/bref/issues/1691
      */
-    protected function joinMultiValueHeaders(string $glue = ','): void
+    private function joinHeaderValues(array $values, string $glue = ','): string
     {
-        Collection::make($this->response->getHeaders())
-            ->reject(fn(array $values, string $name) => strcasecmp($name, 'Set-Cookie') === 0)
-            ->each(function(array $values, string $name) use ($glue) {
-                $this->joinHeaderValues($name, $values, $glue);
-            });
-    }
-
-    protected function joinHeaderValues(string $name, array $values, string $glue): ?string
-    {
-        $value = Collection::make($values)
+        return Collection::make($values)
             ->filter()
             ->join($glue);
-
-        $this->response->getHeaders()->set($name, $value);
-
-        return $value;
     }
 
-    protected function addDevModeHeader(): void
+    private function addDevModeHeader(): void
     {
-        if (Module::getInstance()->getConfig()->getDevMode()) {
-            $this->response->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
+        $this->response->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
+    }
+
+    private function limitHeaderToBytes(string $value, int $bytes, ?string $glue = ','): string
+    {
+        $truncated = substr($value, 0, $bytes);
+
+        if (!$glue) {
+            return $truncated;
         }
+
+        $length = strrpos($truncated, $glue);
+
+        return $length === false
+            ? $truncated
+            : substr($truncated, 0, $length);
     }
 }

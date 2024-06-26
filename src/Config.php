@@ -17,6 +17,7 @@ class Config extends BaseConfig
 {
     public ?string $artifactBaseUrl = null;
     public string $cdnBaseUrl = 'https://cdn.craft.cloud';
+    public bool $gzipResponse = true;
     public ?string $sqsUrl = null;
     public ?string $projectId = null;
     public ?string $environmentId = null;
@@ -40,6 +41,7 @@ class Config extends BaseConfig
     public function init(): void
     {
         if (!Helper::isCraftCloud()) {
+            $this->gzipResponse = false;
             $this->useAssetCdn = false;
             $this->useArtifactCdn = false;
             $this->useAssetBundleCdn = false;

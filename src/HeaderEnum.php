@@ -11,4 +11,10 @@ enum HeaderEnum: string
     case AUTHORIZATION = 'Authorization';
     case DEV_MODE = 'Dev-Mode';
     case REQUEST_TYPE = 'Request-Type';
+    case SET_COOKIE = 'Set-Cookie';
+
+    public function matches(string $name): bool
+    {
+        return strcasecmp($this->value, $name) === 0;
+    }
 }
