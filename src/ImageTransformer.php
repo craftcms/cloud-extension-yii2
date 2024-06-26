@@ -18,9 +18,9 @@ use yii\base\NotSupportedException;
  */
 class ImageTransformer extends Component implements ImageTransformerInterface
 {
-    public const SIGNING_PARAM = 's';
     public const SUPPORTED_IMAGE_FORMATS = ['jpg', 'jpeg', 'gif', 'png', 'avif'];
-    protected Asset $asset;
+    private const SIGNING_PARAM = 's';
+    private Asset $asset;
 
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
@@ -49,7 +49,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
     {
     }
 
-    public function buildTransformParams(ImageTransform $imageTransform): array
+    private function buildTransformParams(ImageTransform $imageTransform): array
     {
         return Collection::make([
             'width' => $imageTransform->width,
@@ -62,7 +62,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         ])->whereNotNull()->all();
     }
 
-    protected function getGravityValue(ImageTransform $imageTransform): ?array
+    private function getGravityValue(ImageTransform $imageTransform): ?array
     {
         if ($this->asset->getHasFocalPoint()) {
             return $this->asset->getFocalPoint();
@@ -97,14 +97,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         ];
     }
 
-    protected function getBackgroundValue(ImageTransform $imageTransform): ?string
+    private function getBackgroundValue(ImageTransform $imageTransform): ?string
     {
         return $imageTransform->mode === 'letterbox'
             ? $imageTransform->fill ?? '#FFFFFF'
             : null;
     }
 
-    protected function getFitValue(ImageTransform $imageTransform): string
+    private function getFitValue(ImageTransform $imageTransform): string
     {
         // @see https://developers.cloudflare.com/images/transform-images/transform-via-url/#fit
         // Cloudflare doesn't have an exact match to `stretch`.
@@ -117,7 +117,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         };
     }
 
-    protected function getFormatValue(ImageTransform $imageTransform): ?string
+    private function getFormatValue(ImageTransform $imageTransform): ?string
     {
         if ($imageTransform->format === 'jpg' && $imageTransform->interlace === 'none') {
             return 'baseline-jpeg';
@@ -129,7 +129,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         };
     }
 
-    public function sign(string $path, $params): string
+    private function sign(string $path, $params): string
     {
         $paramString = http_build_query($params);
         $data = "$path#?$paramString";
@@ -144,6 +144,13 @@ class ImageTransformer extends Component implements ImageTransformerInterface
             true,
         );
 
-        return Helper::base64UrlEncode($hash);
+        return $this->base64UrlEncode($hash);
+    }
+
+    private function base64UrlEncode(string $data): string
+    {
+        $base64Url = strtr(base64_encode($data), '+/', '-_');
+
+        return rtrim($base64Url, '=');
     }
 }

@@ -7,7 +7,6 @@ use craft\cloud\fs\TmpFs;
 use craft\cloud\HeaderEnum;
 use craft\cloud\Module;
 use craft\web\Response;
-use GuzzleHttp\Psr7\Header;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\web\Response as YiiResponse;

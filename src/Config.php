@@ -11,7 +11,9 @@ use League\Uri\Contracts\UriInterface;
 use League\Uri\Uri;
 
 /**
- * @method array s3ClientOptions(array $options)
+ * @method static devMode(bool $value)
+ * @method static s3ClientOptions(array $options)
+ * @method static region(?string $value)
  */
 class Config extends BaseConfig
 {
@@ -32,11 +34,11 @@ class Config extends BaseConfig
     public bool $useQueue = true;
     public int $staticCacheDuration = DateTimeHelper::SECONDS_YEAR;
     public ?string $storageEndpoint = null;
-    protected bool $devMode = false;
-    protected ?string $region = null;
-    protected array $s3ClientOptions = [];
-    protected bool $useAssetCdn = true;
-    protected bool $useArtifactCdn = true;
+    public bool $useAssetCdn = true;
+    public bool $useArtifactCdn = true;
+    private bool $devMode = false;
+    private ?string $region = null;
+    private array $s3ClientOptions = [];
 
     public function init(): void
     {
@@ -58,6 +60,7 @@ class Config extends BaseConfig
         ];
     }
 
+    // Match fluent config setter convention
     public function __call($name, $params)
     {
         if (property_exists($this, $name)) {
@@ -96,18 +99,6 @@ class Config extends BaseConfig
         return $this;
     }
 
-    public function getUseAssetCdn(): bool
-    {
-        return App::env('CRAFT_CLOUD_USE_ASSET_CDN') ?? $this->useAssetCdn;
-    }
-
-    public function setUseAssetCdn(bool $value): static
-    {
-        $this->useAssetCdn = $value;
-
-        return $this;
-    }
-
     /**
      * Technically, this is the limit of the combined request and response.
      * @see  https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html#function-configuration-deployment-and-execution
@@ -124,36 +115,6 @@ class Config extends BaseConfig
         return (int) ini_get('max_execution_time') ?: 900;
     }
 
-    /**
-     * @used-by Module::getConfig()
-     * Alias to match Craft convention
-     */
-    public function useAssetCdn(bool $value): static
-    {
-        return $this->setUseAssetCdn($value);
-    }
-
-    public function getUseArtifactCdn(): bool
-    {
-        return App::env('CRAFT_CLOUD_USE_ARTIFACT_CDN') ?? $this->useArtifactCdn;
-    }
-
-    public function setUseArtifactCdn(bool $value): static
-    {
-        $this->useArtifactCdn = $value;
-
-        return $this;
-    }
-
-    /**
-     * @used-by Module::getConfig()
-     * Alias to match Craft convention
-     */
-    public function useArtifactCdn(bool $value): static
-    {
-        return $this->setUseArtifactCdn($value);
-    }
-
     public function getRegion(): ?string
     {
         return App::env('CRAFT_CLOUD_REGION') ?? $this->region ?? App::env('AWS_REGION');
@@ -164,15 +125,6 @@ class Config extends BaseConfig
         $this->region = $value;
 
         return $this;
-    }
-
-    /**
-     * @used-by Module::getConfig()
-     * Alias to match Craft convention
-     */
-    public function region(?string $value): static
-    {
-        return $this->setRegion($value);
     }
 
     public function getShortEnvironmentId(): ?string
@@ -200,13 +152,13 @@ class Config extends BaseConfig
         $rules[] = [
             ['environmentId', 'projectId'],
             'required',
-            'when' => fn(Config $model) => $model->getUseAssetCdn(),
+            'when' => fn(Config $model) => $model->useAssetCdn,
         ];
 
         $rules[] = [
             ['environmentId', 'buildId'],
             'required',
-            'when' => fn(Config $model) => $model->getUseArtifactCdn(),
+            'when' => fn(Config $model) => $model->useArtifactCdn,
         ];
 
         return $rules;

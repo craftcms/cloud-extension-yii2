@@ -27,7 +27,7 @@ class UploaderAsset extends AssetBundle
 
     public function registerAssetFiles($view): void
     {
-        if (!Module::getInstance()->getConfig()->getUseAssetCdn()) {
+        if (!Module::getInstance()->getConfig()->useAssetCdn) {
             return;
         }
 

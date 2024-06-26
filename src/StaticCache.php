@@ -51,43 +51,43 @@ class StaticCache extends \yii\base\Component
         Event::on(
             \craft\web\Application::class,
             \craft\web\Application::EVENT_INIT,
-            [$this, 'handleInitWebApplication'],
+            fn(Event $event) => $this->handleInitWebApplication($event),
         );
 
         Event::on(
             View::class,
             View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE,
-            [$this, 'handleBeforeRenderPageTemplate'],
+            fn(TemplateEvent $event) => $this->handleBeforeRenderPageTemplate($event),
         );
 
         Event::on(
             \craft\web\Response::class,
             \yii\web\Response::EVENT_AFTER_PREPARE,
-            [$this, 'handleAfterPrepareWebResponse'],
+            fn(Event $event) => $this->handleAfterPrepareWebResponse($event),
         );
 
         Event::on(
             Elements::class,
             Elements::EVENT_INVALIDATE_CACHES,
-            [$this, 'handleInvalidateElementCaches'],
+            fn(InvalidateElementCachesEvent $event) => $this->handleInvalidateElementCaches($event),
         );
 
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_SAVE_ELEMENT,
-            [$this, 'handleSaveElement'],
+            fn(ElementEvent $event) => $this->handleSaveElement($event),
         );
 
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_DELETE_ELEMENT,
-            [$this, 'handleDeleteElement'],
+            fn(ElementEvent $event) => $this->handleDeleteElement($event),
         );
 
         Event::on(
             ClearCaches::class,
             ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
-            [$this, 'handleRegisterCacheOptions'],
+            fn(RegisterCacheOptionsEvent $event) => $this->handleRegisterCacheOptions($event),
         );
 
         Craft::$app->onAfterRequest(function() {
@@ -97,7 +97,7 @@ class StaticCache extends \yii\base\Component
         });
     }
 
-    public function handleInitWebApplication(Event $event): void
+    private function handleInitWebApplication(Event $event): void
     {
         if (!$this->isCacheable()) {
             return;
@@ -107,7 +107,7 @@ class StaticCache extends \yii\base\Component
         $this->collectingCacheInfo = true;
     }
 
-    public function handleAfterPrepareWebResponse(Event $event): void
+    private function handleAfterPrepareWebResponse(Event $event): void
     {
         if (!$this->isCacheable()) {
             return;
@@ -126,7 +126,7 @@ class StaticCache extends \yii\base\Component
         $this->addCacheHeadersToWebResponse();
     }
 
-    public function handleBeforeRenderPageTemplate(TemplateEvent $event): void
+    private function handleBeforeRenderPageTemplate(TemplateEvent $event): void
     {
         /** @var UrlManager $urlManager */
         $urlManager = Craft::$app->getUrlManager();
@@ -137,7 +137,7 @@ class StaticCache extends \yii\base\Component
         }
     }
 
-    public function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
+    private function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
     {
         $skip = Collection::make($event->tags)->contains(function(string $tag) {
             return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag);
@@ -150,7 +150,7 @@ class StaticCache extends \yii\base\Component
         $this->tagsToPurge->push(...$event->tags);
     }
 
-    public function handleRegisterCacheOptions(RegisterCacheOptionsEvent $event): void
+    private function handleRegisterCacheOptions(RegisterCacheOptionsEvent $event): void
     {
         $event->options[] = [
             'key' => 'craft-cloud-caches',
@@ -159,12 +159,12 @@ class StaticCache extends \yii\base\Component
         ];
     }
 
-    public function handleSaveElement(ElementEvent $event): void
+    private function handleSaveElement(ElementEvent $event): void
     {
         $this->purgeElementUri($event->element);
     }
 
-    public function handleDeleteElement(ElementEvent $event): void
+    private function handleDeleteElement(ElementEvent $event): void
     {
         $this->purgeElementUri($event->element);
     }

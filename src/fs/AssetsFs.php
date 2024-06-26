@@ -12,7 +12,7 @@ class AssetsFs extends CdnFs
 
     public function init(): void
     {
-        $this->useLocalFs = !Module::getInstance()->getConfig()->getUseAssetCdn();
+        $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
         parent::init();
     }
 
@@ -26,7 +26,7 @@ class AssetsFs extends CdnFs
 
     public function getPrefix(): string
     {
-        if (!Module::getInstance()->getConfig()->getUseAssetCdn()) {
+        if (!Module::getInstance()->getConfig()->useAssetCdn) {
             return '';
         }
 

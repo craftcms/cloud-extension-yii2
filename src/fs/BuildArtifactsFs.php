@@ -12,14 +12,14 @@ class BuildArtifactsFs extends BuildsFs
 
     public function init(): void
     {
-        $this->useLocalFs = !Module::getInstance()->getConfig()->getUseArtifactCdn();
+        $this->useLocalFs = !Module::getInstance()->getConfig()->useArtifactCdn;
         $this->localFsUrl = Module::getInstance()->getConfig()->artifactBaseUrl ?? $this->localFsUrl;
         parent::init();
     }
 
     public function getPrefix(): string
     {
-        if (!Module::getInstance()->getConfig()->getUseArtifactCdn()) {
+        if (!Module::getInstance()->getConfig()->useArtifactCdn) {
             return '';
         }
 

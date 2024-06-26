@@ -19,6 +19,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\fs\Temp;
 use craft\helpers\App;
+use craft\helpers\ConfigHelper;
 use craft\imagetransforms\FallbackTransformer;
 use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
 use craft\services\Fs as FsService;
@@ -65,7 +66,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             $this->bootstrapCloud($app);
         }
 
-        if ($this->getConfig()->getUseAssetCdn()) {
+        if ($this->getConfig()->useAssetCdn) {
             $app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
 
             /**
@@ -109,7 +110,10 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     protected function bootstrapCloud(ConsoleApplication|WebApplication $app): void
     {
         // Set Craft memory limit to just below PHP's limit
-        Helper::setMemoryLimit(ini_get('memory_limit'), $app->getErrorHandler()->memoryReserveSize);
+        $this->setMemoryLimit(
+            ini_get('memory_limit'),
+            $app->getErrorHandler()->memoryReserveSize,
+        );
 
         Craft::$container->set(
             Temp::class,
@@ -182,7 +186,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             Asset::class,
             Model::EVENT_DEFINE_RULES,
             function(DefineRulesEvent $e) {
-                $e->rules = Helper::removeAttributeFromRules($e->rules, 'tempFilePath');
+                $e->rules = $this->removeAttributeFromRules($e->rules, 'tempFilePath');
             }
         );
     }
@@ -200,5 +204,34 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     public function getStaticCache(): StaticCache
     {
         return $this->get('staticCache');
+    }
+
+    private function removeAttributeFromRule(array $rule, string $attributeToRemove): array
+    {
+        $attributes = Collection::wrap($rule[0])
+            ->reject(fn($attribute) => $attribute === $attributeToRemove);
+
+        // We may end up with a rule with an empty array of attributes.
+        // We still need to keep that rule around so any potential
+        // scenarios get defined from the 'on' key.
+        $rule[0] = $attributes->all();
+
+        return $rule;
+    }
+
+    private function removeAttributeFromRules(array $rules, string $attributeToRemove): array
+    {
+        return Collection::make($rules)
+            ->map(fn($rule) => $this->removeAttributeFromRule($rule, $attributeToRemove))
+            ->all();
+    }
+
+    private function setMemoryLimit(int|string $limit, int|string $offset = 0): int|float
+    {
+        $memoryLimit = ConfigHelper::sizeInBytes($limit) - ConfigHelper::sizeInBytes($offset);
+        Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit((string) $memoryLimit);
+        Craft::info("phpMaxMemoryLimit set to $memoryLimit");
+
+        return $memoryLimit;
     }
 }
