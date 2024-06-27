@@ -6,10 +6,10 @@ Welcome to [**Craft Cloud**](https://craftcms.com/cloud)!
 
 This repository contains source code for the `craftcms/cloud` Composer package, which is required to run a Craft project on our first-party hosting platform, Craft Cloud.
 
-When installed, the extension automatically [bootstraps](https://www.yiiframework.com/doc/guide/2.0/en/runtime-bootstrapping) itself and makes necessary [application configuration](https://craftcms.com/docs/4.x/config/app.html) changes for the detected environment:
+When installed, the extension automatically [bootstraps](https://www.yiiframework.com/doc/guide/2.0/en/runtime-bootstrapping) itself and makes necessary [application configuration](https://craftcms.com/docs/5.x/reference/config/app.html) changes for the detected environment:
 
 - :cloud_with_lightning: **Cloud:** There’s no infrastructure settings to worry about—database, queue, cache, and session configuration is handled for you.
-- :computer: **Local development:** Craft runs normally, in your favorite [development environment](https://craftcms.com/docs/4.x/installation.html).
+- :computer: **Local development:** Craft runs normally, in your favorite [development environment](https://craftcms.com/docs/5.x/install.html).
 
 :sparkles: To learn more about Cloud, check out [our website](https://craftcms.com/cloud)—or dive right in with [Craft Console](https://console.craftcms.com/cloud). Interested in everything the extension does to get your app ready for Cloud? Read our [Cloud extension deep-dive](https://craftcms.com/knowledge-base/cloud-extension), in the knowledge base.
 
@@ -20,7 +20,7 @@ The Cloud extension can be installed in any existing Craft 4.6+ project by runni
 > [!TIP]
 > This process includes the creation of a [`craft-cloud.yaml` configuration file](https://craftcms.com/knowledge-base/cloud-config) which helps Cloud understand your project’s structure and determines which versions of PHP and Node your project will use during builds and at runtime.
 
-When you [deploy](https://craftcms.com/knowledge-base/cloud-deployment) a project to Cloud, the `cloud/up` command will run, wrapping Craft’s built-in [`up` command](https://craftcms.com/docs/4.x/console-commands.html#up) and adding the cache and session tables (if they’re not already present).
+When you [deploy](https://craftcms.com/knowledge-base/cloud-deployment) a project to Cloud, the `cloud/up` command will run, wrapping Craft’s built-in [`up` command](https://craftcms.com/docs/5.x/reference/cli.html#up) and adding the cache and session tables (if they’re not already present).
 
 ## Filesystem
 
@@ -56,7 +56,7 @@ Read more about [how to use artifact URLs](https://craftcms.com/knowledge-base/c
 
 ### Aliases
 
-The following aliases are available, in addition to [those provided by Craft](https://craftcms.com/docs/4.x/config/#aliases).
+The following aliases are available, in addition to [those provided by Craft](https://craftcms.com/docs/5.x/configure.html#aliases).
 
 #### `@web`
 
@@ -64,11 +64,11 @@ On Cloud, the `@web` alias is guaranteed to be the correct environment URL for e
 
 #### `@artifactBaseUrl`
 
-Equivalent to [`cloud.artifactUrl()`](#artifactUrl), this allows [Project Config](https://craftcms.com/docs/4.x/project-config.html) settings to take advantage of dynamic, build-specific CDN URLs.
+Equivalent to [`cloud.artifactUrl()`](#artifactUrl), this allows [Project Config](https://craftcms.com/docs/5.x/system/project-config.html) settings to take advantage of dynamic, build-specific CDN URLs.
 
 ## Configuration
 
-Most configuration (to Craft and the extension itself) is handled directly by Cloud infrastructure, through [environment overrides](https://craftcms.com/docs/4.x/config/#environment-overrides). These options are provided strictly for reference, and have limited utility outside the platform.
+Most configuration (to Craft and the extension itself) is handled directly by Cloud infrastructure, through [environment overrides](https://craftcms.com/docs/5.x/configure.html#environment-overrides). These options are provided strictly for reference, and have limited utility outside the platform.
 
 | Option | Type | Description |
 | --- | --- | --- |
@@ -91,4 +91,5 @@ Most configuration (to Craft and the extension itself) is handled directly by Cl
 | `useAssetCdn` | `boolean` | Whether or not to enable the CDN for uploaded assets. |
 | `useArtifactCdn` | `boolean` | Whether or not to enable the CDN for build artifacts and asset bundles. |
 
-These options can also be set via environment overrides beginning with `CRAFT_CLOUD_`.
+> [!TIP]
+> These options can also be set via environment overrides beginning with `CRAFT_CLOUD_`.
