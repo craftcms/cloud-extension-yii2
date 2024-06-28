@@ -18,10 +18,7 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
         $this->context = $context;
         $records = Collection::make($event->getRecords());
 
-        echo "Processing SQS event with {$records->count()} records.";
-
         $records->each(function(SqsRecord $record) {
-            echo "Handling SQS message: #{$record->getMessageId()}";
             $cliHandler = new CliHandler();
             $body = json_decode(
                 $record->getBody(),
@@ -39,8 +36,6 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
                     'command' => "cloud/queue/exec {$jobId}",
                 ], $this->context, true);
             } catch (ProcessFailedException $e) {
-                echo "Job #$jobId failed and WILL NOT be retried:\n";
-                echo "Message: #{$record->getMessageId()}\n";
                 echo $e->getMessage();
 
                 $this->failJob(
@@ -50,17 +45,12 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
                 );
             } catch (ProcessTimedOutException $e) {
                 if ($cliHandler->shouldRetry()) {
-                    echo "Job #$jobId timed out and WILL be retried via markAsFailed:\n";
-                    echo "Message: #{$record->getMessageId()}\n";
                     echo $e->getMessage();
 
                     $this->markAsFailed($record);
                     return;
                 }
 
-                echo "Job #$jobId timed out and WILL NOT be retried:\n";
-                echo "Message: #{$record->getMessageId()}\n";
-                echo "Running Time: {$cliHandler->getTotalRunningTime()} seconds\n";
                 echo $e->getMessage();
 
                 $this->failJob(
@@ -69,12 +59,8 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
                     'Job exceeded maximum running time: 15 minutes',
                 );
             } catch (\Throwable $e) {
-                echo "Job #$jobId threw and WILL be retried via markAsFailed:\n";
-                echo "Message: #{$record->getMessageId()}\n";
                 echo $e->getMessage();
                 $this->markAsFailed($record);
-            } finally {
-                echo "Done processing job #$jobId (finally).";
             }
         });
     }
@@ -86,7 +72,6 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
                 'command' => "cloud/queue/fail {$jobId} --message={$message}",
             ], $this->context, true);
         } catch (\Throwable $e) {
-            echo "Exception thrown running cloud/queue/fail:\n";
             echo $e->getMessage();
 
             // Attempt to retry the whole message
