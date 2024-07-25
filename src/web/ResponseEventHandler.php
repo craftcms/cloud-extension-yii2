@@ -37,7 +37,6 @@ class ResponseEventHandler
         }
 
         $this->normalizeHeaders();
-        // $this->joinMultiValueHeaders();
 
         if (Module::getInstance()->getConfig()->gzipResponse) {
             $this->gzipResponse();

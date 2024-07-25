@@ -113,7 +113,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
             'fit' => $imageTransform->upscale ? 'contain' : 'scale-down',
             'stretch' => 'cover',
             'letterbox' => 'pad',
-            default => 'crop',
+            default => $imageTransform->upscale ? 'cover' : 'crop',
         };
     }
 
