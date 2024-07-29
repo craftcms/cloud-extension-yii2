@@ -17,6 +17,8 @@ use DateTime;
 use DateTimeInterface;
 use Generator;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\Visibility;
 use League\Uri\Components\HierarchicalPath;
 use League\Uri\Contracts\UriInterface;
@@ -298,26 +300,6 @@ abstract class Fs extends FlysystemFs
         return Visibility::PRIVATE;
     }
 
-    public function uploadDirectory(string $path, string $destPath, $config = []): void
-    {
-        if ($this->useLocalFs) {
-            throw new InvalidConfigException();
-        }
-
-        try {
-            $config = $this->addFileMetadataToConfig($config);
-
-            $this->getClient()->uploadDirectory(
-                $path,
-                $this->getBucketName(),
-                $this->prefixPath($destPath),
-                $config,
-            );
-        } catch (Throwable $exception) {
-            throw new FsException($exception->getMessage(), 0, $exception);
-        }
-    }
-
     public function presignedUrl(string $command, string $path, DateTimeInterface $expiresAt, array $config = []): string
     {
         if ($this->useLocalFs) {
@@ -341,6 +323,56 @@ abstract class Fs extends FlysystemFs
         } catch (Throwable $exception) {
             throw new FsException($exception->getMessage(), 0, $exception);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyFile(string $path, string $newPath, $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->copyFile($path, $newPath);
+            return;
+        }
+
+        parent::copyFile(
+            $path,
+            $newPath,
+            $this->addFileMetadataToConfig($config),
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameFile(string $path, string $newPath, $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->renameFile($path, $newPath);
+            return;
+        }
+
+        parent::renameFile(
+            $path,
+            $newPath,
+            $this->addFileMetadataToConfig($config),
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path, array $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->createDirectory($path, $config);
+            return;
+        }
+
+        parent::createDirectory(
+            $path,
+            $this->addFileMetadataToConfig($config),
+        );
     }
 
     /**
@@ -390,7 +422,11 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
-        parent::write($path, $contents, $config);
+        parent::write(
+            $path,
+            $contents,
+            $this->addFileMetadataToConfig($config),
+        );
     }
 
     /**
@@ -415,7 +451,11 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
-        parent::writeFileFromStream($path, $stream, $config);
+        parent::writeFileFromStream(
+            $path,
+            $stream,
+            $this->addFileMetadataToConfig($config),
+        );
     }
 
     /**
