@@ -326,6 +326,56 @@ abstract class Fs extends FlysystemFs
     }
 
     /**
+     * @inheritdoc
+     */
+    public function copyFile(string $path, string $newPath, $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->copyFile($path, $newPath);
+            return;
+        }
+
+        parent::copyFile(
+            $path,
+            $newPath,
+            $this->addFileMetadataToConfig($config),
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameFile(string $path, string $newPath, $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->renameFile($path, $newPath);
+            return;
+        }
+
+        parent::renameFile(
+            $path,
+            $newPath,
+            $this->addFileMetadataToConfig($config),
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path, array $config = []): void
+    {
+        if ($this->useLocalFs) {
+            $this->getLocalFs()->createDirectory($path, $config);
+            return;
+        }
+
+        parent::createDirectory(
+            $path,
+            $this->addFileMetadataToConfig($config),
+        );
+    }
+
+    /**
      * @inheritDoc
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
@@ -372,7 +422,11 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
-        parent::write($path, $contents, $config);
+        parent::write(
+            $path,
+            $contents,
+            $this->addFileMetadataToConfig($config),
+        );
     }
 
     /**
@@ -397,7 +451,11 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
-        parent::writeFileFromStream($path, $stream, $config);
+        parent::writeFileFromStream(
+            $path,
+            $stream,
+            $this->addFileMetadataToConfig($config),
+        );
     }
 
     /**
