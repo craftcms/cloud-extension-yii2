@@ -300,26 +300,6 @@ abstract class Fs extends FlysystemFs
         return Visibility::PRIVATE;
     }
 
-    public function uploadDirectory(string $path, string $destPath, $config = []): void
-    {
-        if ($this->useLocalFs) {
-            throw new InvalidConfigException();
-        }
-
-        try {
-            $config = $this->addFileMetadataToConfig($config);
-
-            $this->getClient()->uploadDirectory(
-                $path,
-                $this->getBucketName(),
-                $this->prefixPath($destPath),
-                $config,
-            );
-        } catch (Throwable $exception) {
-            throw new FsException($exception->getMessage(), 0, $exception);
-        }
-    }
-
     public function presignedUrl(string $command, string $path, DateTimeInterface $expiresAt, array $config = []): string
     {
         if ($this->useLocalFs) {
