@@ -222,7 +222,7 @@ class StaticCache extends \yii\base\Component
         // Cache in proxy, not in browser
         Craft::$app->getResponse()->getHeaders()->setDefault(
             HeaderEnum::CACHE_CONTROL->value,
-            "public, s-maxage=$this->cacheDuration max-age=0",
+            "public, s-maxage=$this->cacheDuration, max-age=0",
         );
 
         // Capture, remove any existing headers so we can prepare them
