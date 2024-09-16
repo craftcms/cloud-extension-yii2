@@ -22,33 +22,38 @@ class CliHandler implements Handler
      */
     public function handle(mixed $event, Context $context, $throw = false): array
     {
-        $commandArgs = $event['command'] ?? null;
+        $commandString = $event['command'] ?? null;
 
-        if (!$commandArgs) {
+        if (!$commandString) {
             throw new \Exception('No command found.');
         }
 
-        $php = PHP_BINARY;
-        $command = escapeshellcmd("{$php} {$this->scriptPath} {$commandArgs}");
         $remainingSeconds = $context->getRemainingTimeInMillis() / 1000;
         $timeout = max(1, $remainingSeconds - 1);
-        $this->process = Process::fromShellCommandline($command, null, [
-            'LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR),
-        ], null, $timeout);
+        $commandArgs = explode(' ', $commandString);
+        $this->process = new Process(
+            [PHP_BINARY, $this->scriptPath, ...$commandArgs],
+            null,
+            [
+                'LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR),
+            ],
+            null,
+            $timeout,
+        );
 
         echo "Function time remaining: {$remainingSeconds} seconds";
 
         try {
-            echo "Running command with $timeout second timeout: $command";
+            echo "Running command with $timeout second timeout: {$this->process->getCommandLine()}";
 
             /** @throws ProcessTimedOutException|ProcessFailedException */
             $this->process->mustRun(function($type, $buffer): void {
                 echo $buffer;
             });
 
-            echo "Command succeeded after {$this->getTotalRunningTime()} seconds: $command\n";
+            echo "Command succeeded after {$this->getTotalRunningTime()} seconds: {$this->process->getCommandLine()}\n";
         } catch (\Throwable $e) {
-            echo "Command failed after {$this->getTotalRunningTime()} seconds: $command\n";
+            echo "Command failed after {$this->getTotalRunningTime()} seconds: {$this->process->getCommandLine()}\n";
             echo "Exception while handling CLI event:\n";
             echo "{$e->getMessage()}\n";
             echo "{$e->getTraceAsString()}\n";
