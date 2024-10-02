@@ -13,6 +13,7 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\web\Controller;
 use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\Model;
@@ -167,7 +168,9 @@ class AssetsController extends Controller
 
         // Setting these so that Asset::_relocateFile doesn't try to download
         $asset->folderId = $folder->id;
-        $asset->folderPath = $folder->path;
+        $asset->folderPath = Collection::make(explode('/', $folder->path))
+            ->map(fn($segment) => rawurlencode($segment))
+            ->implode('/');
 
         if (!$selectionCondition) {
             $asset->newFilename = $targetFilename;
