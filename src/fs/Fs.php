@@ -16,6 +16,7 @@ use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeInterface;
 use Generator;
+use Illuminate\Support\Collection;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\UnableToCopyFile;
@@ -535,5 +536,15 @@ abstract class Fs extends FlysystemFs
         } catch (FilesystemException|UnableToCopyFile $exception) {
             throw new FsException($exception->getMessage(), 0, $exception);
         }
+    }
+
+    /**
+     * S3 encodes path segments when generating presigned PUT urls, so we need to do the same.
+     */
+    public static function urlEncodePathSegments(string $path): string
+    {
+        return Collection::make(explode('/', $path))
+            ->map(fn($segment) => rawurlencode($segment))
+            ->implode('/');
     }
 }

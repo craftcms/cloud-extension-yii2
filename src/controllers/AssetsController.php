@@ -167,7 +167,9 @@ class AssetsController extends Controller
 
         // Setting these so that Asset::_relocateFile doesn't try to download
         $asset->folderId = $folder->id;
-        $asset->folderPath = $folder->path;
+
+        // Handle special characters that have been encoded from the presigned URL
+        $asset->folderPath = Fs::urlEncodePathSegments($folder->path);
 
         if (!$selectionCondition) {
             $asset->newFilename = $targetFilename;
