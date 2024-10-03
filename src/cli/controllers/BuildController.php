@@ -10,6 +10,8 @@ use yii\console\Exception;
 
 class BuildController extends Controller
 {
+    use RunningTimeTrait;
+
     public $defaultAction = 'build';
     public ?string $publishAssetBundlesTo = null;
     public string $craftEdition = '';
