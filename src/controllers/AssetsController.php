@@ -169,7 +169,7 @@ class AssetsController extends Controller
         $asset->folderId = $folder->id;
 
         // Handle special characters that have been encoded from the presigned URL
-        $asset->folderPath = Fs::urlEncodePathSegments($folder->path);
+        $asset->folderPath = is_string($folder->path) ? Fs::urlEncodePathSegments($folder->path) : $asset->folderPath;
 
         if (!$selectionCondition) {
             $asset->newFilename = $targetFilename;
