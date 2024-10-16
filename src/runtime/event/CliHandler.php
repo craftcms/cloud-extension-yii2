@@ -28,6 +28,8 @@ class CliHandler implements Handler
             throw new \Exception('No command found.');
         }
 
+        $commandArgs = escapeshellarg($commandArgs);
+
         $php = PHP_BINARY;
         $command = escapeshellcmd("{$php} {$this->scriptPath} {$commandArgs}");
         $remainingSeconds = $context->getRemainingTimeInMillis() / 1000;
