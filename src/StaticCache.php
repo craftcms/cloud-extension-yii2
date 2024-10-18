@@ -225,15 +225,20 @@ class StaticCache extends \yii\base\Component
             "public, s-maxage=$this->cacheDuration, max-age=0",
         );
 
-        // Capture, remove any existing headers so we can prepare them
+        // Capture and remove any existing headers so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
         $headers->remove(HeaderEnum::CACHE_TAG->value);
-        $this->tags = $this->tags->push(...$existingTagsFromHeader);
+        $this->tags->push(...$existingTagsFromHeader);
+        $this->tags = $this->prepareTags(...$this->tags);
 
-        $this->prepareTags(...$this->tags)
-            ->each(fn(string $tag) => $headers->add(
+        Craft::warning(new PsrMessage('Adding cache tags to response', [
+            'tags' => $this->tags,
+        ]));
+
+        $this->tags
+            ->each(fn(StaticCacheTag $tag) => $headers->add(
                 HeaderEnum::CACHE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
     }
 
@@ -257,13 +262,13 @@ class StaticCache extends \yii\base\Component
         }
 
         Craft::info(new PsrMessage('Purging tags', [
-            'tags' => $tags->all(),
+            'tags' => $tags,
         ]));
 
         if ($isWebResponse) {
-            $tags->each(fn(string $tag) => $response->getHeaders()->add(
+            $tags->each(fn(StaticCacheTag $tag) => $response->getHeaders()->add(
                 HeaderEnum::CACHE_PURGE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
 
             return;
@@ -306,12 +311,8 @@ class StaticCache extends \yii\base\Component
     private function prepareTags(string|StaticCacheTag ...$tags): Collection
     {
         return Collection::make($tags)
-            ->map(function(string|StaticCacheTag $tag): string {
-                $tag = is_string($tag) ? StaticCacheTag::create($tag) : $tag;
-
-                return $tag->getValue();
-            })
-            ->filter()
-            ->unique();
+            ->map(fn(string|StaticCacheTag $tag) => is_string($tag) ? StaticCacheTag::create($tag) : $tag)
+            ->filter(fn(StaticCacheTag $tag) => (bool) $tag->getValue())
+            ->unique(fn(StaticCacheTag $tag) => $tag->getValue());
     }
 }
