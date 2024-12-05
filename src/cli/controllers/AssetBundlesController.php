@@ -8,6 +8,7 @@ use craft\cloud\Composer;
 use craft\cloud\web\AssetManager;
 use craft\console\Controller;
 use craft\helpers\App;
+use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use ReflectionClass;
 use yii\console\Exception;
 use yii\console\ExitCode;
@@ -67,6 +68,11 @@ class AssetBundlesController extends Controller
                     // TODO: enhance \craft\console\Controller::do to return
                     // non-error responses (skip)
                     return;
+                }
+
+                // Set the language to a `web/assets/datepickeri18n/dist/datepicker-*.js` match so the entire directory is published
+                if ($className === DatepickerI18nAsset::class) {
+                    Craft::$app->language = 'en-GB';
                 }
 
                 /** @var AssetBundle $assetBundle */
