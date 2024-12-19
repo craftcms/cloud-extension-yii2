@@ -224,6 +224,14 @@ class StaticCache extends \yii\base\Component
             HeaderEnum::CACHE_CONTROL->value
         );
 
+        // Cache in CDN, not in browser
+        if ($cacheControl) {
+            Craft::$app->getResponse()->getHeaders()->setDefault(
+                HeaderEnum::CDN_CACHE_CONTROL->value,
+                $cacheControl,
+            );
+        }
+
         // Enable ESI processing
         // Note: The Surrogate-Control header will cause Cloudflare to ignore
         // the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
@@ -231,14 +239,6 @@ class StaticCache extends \yii\base\Component
             HeaderEnum::SURROGATE_CONTROL->value,
             'content="ESI/1.0"',
         );
-
-        // Cache in CDN, not in browser
-        Craft::$app->getResponse()->getHeaders()->setDefault(
-            HeaderEnum::CDN_CACHE_CONTROL->value,
-            $cacheControl,
-        );
-
-
 
         // Capture, remove any existing headers so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
