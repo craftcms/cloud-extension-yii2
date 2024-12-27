@@ -15,7 +15,7 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: ''
+      craft_version: '4'
       node_version: '18'
       php_version: '8.2'
       jobs: '["ecs", "phpstan", "prettier"]'
