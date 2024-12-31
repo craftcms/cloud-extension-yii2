@@ -54,11 +54,10 @@ class AssetManager extends \craft\web\AssetManager
                 ->toString();
         }
 
-        // @phpstan-ignore-next-line
-        $alias = Craft::alias($dir);
+        $pathFromRoot = StringHelper::removeLeft($dir, Craft::getAlias('@root/'));
 
         return FileHelper::sanitizeFilename(
-            preg_replace('/\/|@/', '-', $alias),
+            preg_replace('/\/|@/', '-', $pathFromRoot),
             ['asciiOnly' => true]
         );
     }
