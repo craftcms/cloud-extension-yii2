@@ -42,7 +42,7 @@ class ResponseEventHandler
             $this->gzipResponse();
         }
 
-        if ($this->response->stream && $this->response->getContentType() !== 'text/event-stream') {
+        if ($this->response->stream && str_starts_with($this->response->getContentType(), 'text/')) {
             $this->serveBinaryFromS3();
         }
     }
