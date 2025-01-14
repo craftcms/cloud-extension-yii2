@@ -72,7 +72,7 @@ Most configuration (to Craft and the extension itself) is handled directly by Cl
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `artifactBaseUrl` | `string|null` | Directly set a fully-qualified URL to build artifacts. |
+| `artifactBaseUrl` | `string\|null` | Directly set a fully-qualified URL to build artifacts. |
 | `s3ClientOptions` | `array` | Additional settings to pass to the `Aws\S3\S3Client` instance when accessing storage APIs. |
 | `cdnBaseUrl` | `string` | Used when building URLs to [assets](#filesystem) and other build [artifacts](#artifacturl). |
 | `sqsUrl` | `string` | Determines how Craft communicates with the underlying queue provider. |
@@ -85,7 +85,7 @@ Most configuration (to Craft and the extension itself) is handled directly by Cl
 | `redisUrl` | `string` | Connection string for the environment’s Redis instance. |
 | `signingKey` | `string` | A secret value used to protect transform URLs against abuse. |
 | `useAssetBundleCdn` | `boolean` | Whether or not to enable the CDN for asset bundles. |
-| `previewDomain` | `string|null` | Set when accessing an environment from its [preview domain](https://craftcms.com/knowledge-base/cloud-domains#preview-domains). |
+| `previewDomain` | `string\|null` | Set when accessing an environment from its [preview domain](https://craftcms.com/knowledge-base/cloud-domains#preview-domains). |
 | `useQueue` | `boolean` | Whether or not to use Cloud’s SQS-backed queue driver. |
 | `region` | `string` | The app region, chosen when creating the project. |
 | `useAssetCdn` | `boolean` | Whether or not to enable the CDN for uploaded assets. |
