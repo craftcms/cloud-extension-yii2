@@ -195,13 +195,15 @@ class StaticCache extends \yii\base\Component
 
     private function purgeElementUri(ElementInterface $element): void
     {
-        if (ElementHelper::isDraftOrRevision($element) || !$element->uri) {
+        $uri = $element->uri ?? null;
+
+        if (ElementHelper::isDraftOrRevision($element) || !$uri) {
             return;
         }
 
         $uri = $element->getIsHomepage()
             ? '/'
-            : Path::new($element->uri)->withLeadingSlash()->withoutTrailingSlash();
+            : Path::new($uri)->withLeadingSlash()->withoutTrailingSlash();
 
         $tag = StaticCacheTag::create($uri)
             ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
@@ -215,22 +217,15 @@ class StaticCache extends \yii\base\Component
         $this->cacheDuration = $this->cacheDuration ?? Module::getInstance()->getConfig()->staticCacheDuration;
         $headers = Craft::$app->getResponse()->getHeaders();
 
-        Craft::info(new PsrMessage('Setting cache headers', [
-            'duration' => $this->cacheDuration,
-        ]));
-
-        // Copy the cache-control header to the cdn-cache-control header
         $cacheControl = Craft::$app->getResponse()->getHeaders()->get(
             HeaderEnum::CACHE_CONTROL->value
         );
 
-        // Cache in CDN, not in browser
-        if ($cacheControl) {
-            Craft::$app->getResponse()->getHeaders()->setDefault(
-                HeaderEnum::CDN_CACHE_CONTROL->value,
-                $cacheControl,
-            );
-        }
+        // Copy the cache-control header to the cdn-cache-control header
+        Craft::$app->getResponse()->getHeaders()->setDefault(
+            HeaderEnum::CDN_CACHE_CONTROL->value,
+            $cacheControl ?? "public, max-age=$this->cacheDuration",
+        );
 
         // Enable ESI processing
         // Note: The Surrogate-Control header will cause Cloudflare to ignore
