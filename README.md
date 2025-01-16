@@ -70,26 +70,26 @@ Equivalent to [`cloud.artifactUrl()`](#artifactUrl), this allows [Project Config
 
 Most configuration (to Craft and the extension itself) is handled directly by Cloud infrastructure, through [environment overrides](https://craftcms.com/docs/5.x/configure.html#environment-overrides). These options are provided strictly for reference, and have limited utility outside the platform.
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `artifactBaseUrl` | `string\|null` | Directly set a fully-qualified URL to build artifacts. |
-| `s3ClientOptions` | `array` | Additional settings to pass to the `Aws\S3\S3Client` instance when accessing storage APIs. |
-| `cdnBaseUrl` | `string` | Used when building URLs to [assets](#filesystem) and other build [artifacts](#artifacturl). |
-| `sqsUrl` | `string` | Determines how Craft communicates with the underlying queue provider. |
-| `projectId` | `string` | UUID of the current project. |
-| `environmentId` | `string` | UUID of the current [environment](https://craftcms.com/knowledge-base/cloud-environments). |
-| `buildId` | `string` | UUID of the current [build](https://craftcms.com/knowledge-base/cloud-builds). |
-| `accessKey` | `string` | AWS access key, used for communicating with storage APIs. |
-| `accessSecret` | `string` | AWS access secret, used in conjunction with the `accessKey`. |
-| `accessToken` | `string` | AWS access token. |
-| `redisUrl` | `string` | Connection string for the environment’s Redis instance. |
-| `signingKey` | `string` | A secret value used to protect transform URLs against abuse. |
-| `useAssetBundleCdn` | `boolean` | Whether or not to enable the CDN for asset bundles. |
-| `previewDomain` | `string\|null` | Set when accessing an environment from its [preview domain](https://craftcms.com/knowledge-base/cloud-domains#preview-domains). |
-| `useQueue` | `boolean` | Whether or not to use Cloud’s SQS-backed queue driver. |
-| `region` | `string` | The app region, chosen when creating the project. |
-| `useAssetCdn` | `boolean` | Whether or not to enable the CDN for uploaded assets. |
-| `useArtifactCdn` | `boolean` | Whether or not to enable the CDN for build artifacts and asset bundles. |
-
+| Option                | Type           | Description                                                                                                                     |
+|-----------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `artifactBaseUrl`     | `string\|null` | Directly set a fully-qualified URL to build artifacts.                                                                          |
+| `s3ClientOptions`     | `array`        | Additional settings to pass to the `Aws\S3\S3Client` instance when accessing storage APIs.                                      |
+| `cdnBaseUrl`          | `string`       | Used when building URLs to [assets](#filesystem) and other build [artifacts](#artifacturl).                                     |
+| `sqsUrl`              | `string`       | Determines how Craft communicates with the underlying queue provider.                                                           |
+| `projectId`           | `string`       | UUID of the current project.                                                                                                    |
+| `environmentId`       | `string`       | UUID of the current [environment](https://craftcms.com/knowledge-base/cloud-environments).                                      |
+| `buildId`             | `string`       | UUID of the current [build](https://craftcms.com/knowledge-base/cloud-builds).                                                  |
+| `accessKey`           | `string`       | AWS access key, used for communicating with storage APIs.                                                                       |
+| `accessSecret`        | `string`       | AWS access secret, used in conjunction with the `accessKey`.                                                                    |
+| `accessToken`         | `string`       | AWS access token.                                                                                                               |
+| `redisUrl`            | `string`       | Connection string for the environment’s Redis instance.                                                                         |
+| `signingKey`          | `string`       | A secret value used to protect transform URLs against abuse.                                                                    |
+| `useAssetBundleCdn`   | `boolean`      | Whether or not to enable the CDN for asset bundles.                                                                             |
+| `previewDomain`       | `string\|null` | Set when accessing an environment from its [preview domain](https://craftcms.com/knowledge-base/cloud-domains#preview-domains). |
+| `useQueue`            | `boolean`      | Whether or not to use Cloud’s SQS-backed queue driver.                                                                          |
+| `region`              | `string`       | The app region, chosen when creating the project.                                                                               |
+| `useAssetCdn`         | `boolean`      | Whether or not to enable the CDN for uploaded assets.                                                                           |
+| `useArtifactCdn`      | `boolean`      | Whether or not to enable the CDN for build artifacts and asset bundles.                                                         |
+| `staticCacheDuration` | `int`          | The default duration, in seconds, to statically cache requests.                                                                 |
 > [!TIP]
 > These options can also be set via environment overrides beginning with `CRAFT_CLOUD_`.
