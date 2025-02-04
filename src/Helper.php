@@ -44,16 +44,29 @@ class Helper
             throw new Exception('Gateway API requests require a URL.');
         }
 
-        $context = Helper::createSigningContext($headers->keys());
-        $request = new Request(
-            'HEAD',
-            (string) $url,
-            $headers->all(),
-        );
+        // Silence known dynamic property deprecations from HttpSignatures
+        return self::withoutDeprecationErrors(function() use ($headers, $url) {
+            $context = Helper::createSigningContext($headers->keys());
+            $request = new Request(
+                'HEAD',
+                (string) $url,
+                $headers->all(),
+            );
 
-        return Craft::createGuzzleClient()->send(
-            $context->signer()->sign($request)
-        );
+            return Craft::createGuzzleClient()->send(
+                $context->signer()->sign($request)
+            );
+        });
+    }
+
+    private static function withoutDeprecationErrors(callable $callback): mixed
+    {
+        $errorLevel = error_reporting(error_reporting());
+        error_reporting($errorLevel & ~E_DEPRECATED);
+        $return = $callback();
+        error_reporting($errorLevel);
+
+        return $return;
     }
 
     private static function createSigningContext(iterable $headers = []): Context
