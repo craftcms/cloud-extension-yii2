@@ -36,23 +36,12 @@ class CliHandler implements Handler
             'LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR),
         ], null, $timeout);
 
-        echo "Function time remaining: {$remainingSeconds} seconds";
-
         try {
-            echo "Running command with $timeout second timeout: $command";
-
             /** @throws ProcessTimedOutException|ProcessFailedException */
             $this->process->mustRun(function($type, $buffer): void {
                 echo $buffer;
             });
-
-            echo "Command succeeded after {$this->getTotalRunningTime()} seconds: $command\n";
         } catch (\Throwable $e) {
-            echo "Command failed after {$this->getTotalRunningTime()} seconds: $command\n";
-            echo "Exception while handling CLI event:\n";
-            echo "{$e->getMessage()}\n";
-            echo "{$e->getTraceAsString()}\n";
-
             if ($throw) {
                 throw $e;
             }
