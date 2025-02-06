@@ -95,7 +95,7 @@ class StaticCache extends \yii\base\Component
                 try {
                     $this->purgeTags(...$this->tagsToPurge);
                 } catch (\Throwable $e) {
-                    Craft::$app->getErrorHandler()->logException($e);
+                    // Craft::$app->getErrorHandler()->logException($e);
                 }
             }
         });
