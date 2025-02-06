@@ -92,7 +92,11 @@ class StaticCache extends \yii\base\Component
 
         Craft::$app->onAfterRequest(function() {
             if ($this->tagsToPurge->isNotEmpty()) {
-                $this->purgeTags(...$this->tagsToPurge);
+                try {
+                    $this->purgeTags(...$this->tagsToPurge);
+                } catch (\Throwable $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
             }
         });
     }
