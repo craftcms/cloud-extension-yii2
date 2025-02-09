@@ -8,7 +8,7 @@ use League\Uri\Components\HierarchicalPath;
 class AssetsFs extends CdnFs
 {
     public ?string $localFsPath = '@webroot/uploads';
-    public ?string $localFsUrl = '@web/uploads';
+    public ?string $localFsUrl = '/uploads';
 
     public function init(): void
     {
