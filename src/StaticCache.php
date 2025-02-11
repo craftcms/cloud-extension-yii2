@@ -222,17 +222,28 @@ class StaticCache extends \yii\base\Component
         $this->cacheDuration = $this->cacheDuration ?? Module::getInstance()->getConfig()->staticCacheDuration;
         $headers = Craft::$app->getResponse()->getHeaders();
 
-        $cacheControl = Craft::$app->getResponse()->getHeaders()->get(
-            HeaderEnum::CACHE_CONTROL->value
-        );
+        $cacheControlDirectives = Collection::make($headers->get(
+            HeaderEnum::CACHE_CONTROL->value,
+            first: false,
+        ));
 
-        // Copy the cache-control header to the cdn-cache-control header
-        Craft::$app->getResponse()->getHeaders()->setDefault(
+        // Copy cache-control directives to the cdn-cache-control header
+        // @see https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
+        $staleWhileRevalidateDuration = Module::getInstance()->getConfig()->staleWhileRevalidateDuration;
+        $cdnCacheControlDirectives = $cacheControlDirectives->isEmpty()
+            ? Collection::make([
+                'public',
+                "max-age=$this->cacheDuration",
+                "stale-while-revalidate=$staleWhileRevalidateDuration",
+            ])
+            : $cacheControlDirectives;
+
+        $headers->setDefault(
             HeaderEnum::CDN_CACHE_CONTROL->value,
-            $cacheControl ?? "public, max-age=$this->cacheDuration",
+            $cdnCacheControlDirectives->implode(','),
         );
 
-        // Capture, remove any existing headers so we can prepare them
+        // Capture, remove any existing headers, so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
         $headers->remove(HeaderEnum::CACHE_TAG->value);
         $this->tags = $this->tags->push(...$existingTagsFromHeader);
