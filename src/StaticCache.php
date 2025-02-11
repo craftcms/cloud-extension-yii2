@@ -232,14 +232,6 @@ class StaticCache extends \yii\base\Component
             $cacheControl ?? "public, max-age=$this->cacheDuration",
         );
 
-        // Enable ESI processing
-        // Note: The Surrogate-Control header will cause Cloudflare to ignore
-        // the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
-        Craft::$app->getResponse()->getHeaders()->setDefault(
-            HeaderEnum::SURROGATE_CONTROL->value,
-            'content="ESI/1.0"',
-        );
-
         // Capture, remove any existing headers so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
         $headers->remove(HeaderEnum::CACHE_TAG->value);

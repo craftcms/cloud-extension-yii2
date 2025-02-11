@@ -21,4 +21,9 @@ class CloudVariable extends ServiceLocator
     {
         return Helper::isCraftCloud();
     }
+
+    public function enableEsi(): void
+    {
+        Helper::enableEsi();
+    }
 }
