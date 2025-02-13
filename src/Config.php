@@ -33,7 +33,7 @@ class Config extends BaseConfig
     public ?string $previewDomain = null;
     public bool $useQueue = true;
     public int $staticCacheDuration = DateTimeHelper::SECONDS_YEAR;
-    public int $staleWhileRevalidateDuration = DateTimeHelper::SECONDS_HOUR;
+    public int $staticCacheStaleWhileRevalidateDuration = DateTimeHelper::SECONDS_HOUR;
     public ?string $storageEndpoint = null;
     public bool $useAssetCdn = true;
     public bool $useArtifactCdn = true;
