@@ -229,12 +229,12 @@ class StaticCache extends \yii\base\Component
 
         // Copy cache-control directives to the cdn-cache-control header
         // @see https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
-        $staleWhileRevalidateDuration = Module::getInstance()->getConfig()->staleWhileRevalidateDuration;
+        $swrDuration = Module::getInstance()->getConfig()->staticCacheStaleWhileRevalidateDuration;
         $cdnCacheControlDirectives = $cacheControlDirectives->isEmpty()
             ? Collection::make([
                 'public',
                 "max-age=$this->cacheDuration",
-                "stale-while-revalidate=$staleWhileRevalidateDuration",
+                "stale-while-revalidate=$swrDuration",
             ])
             : $cacheControlDirectives;
 
