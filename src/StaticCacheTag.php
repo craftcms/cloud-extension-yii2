@@ -2,7 +2,7 @@
 
 namespace craft\cloud;
 
-class StaticCacheTag implements \Stringable
+class StaticCacheTag implements \Stringable, \JsonSerializable
 {
     public readonly string $originalValue;
     private bool $minify = true;
@@ -18,6 +18,14 @@ class StaticCacheTag implements \Stringable
         return new self($value);
     }
 
+    public function jsonSerialize(): false|string
+    {
+        return json_encode([
+            'value' => $this->getValue(),
+            'originalValue' => $this->originalValue,
+        ]);
+    }
+
     public function __toString(): string
     {
         return $this->getValue();
@@ -25,16 +33,17 @@ class StaticCacheTag implements \Stringable
 
     public function getValue(): string
     {
-        $this->removeInvalidCharacters();
+        $clone = clone $this;
+        $clone->removeInvalidCharacters();
 
-        if ($this->minify) {
-            return $this
+        if ($clone->value && $clone->minify) {
+            return self::create($clone->value)
                 ->hash()
                 ->withPrefix(Module::getInstance()->getConfig()->getShortEnvironmentId())
                 ->value;
         }
 
-        return $this->value;
+        return $clone->value;
     }
 
     public function withPrefix(string $prefix): self

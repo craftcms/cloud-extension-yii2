@@ -222,33 +222,41 @@ class StaticCache extends \yii\base\Component
         $this->cacheDuration = $this->cacheDuration ?? Module::getInstance()->getConfig()->staticCacheDuration;
         $headers = Craft::$app->getResponse()->getHeaders();
 
-        $cacheControl = Craft::$app->getResponse()->getHeaders()->get(
-            HeaderEnum::CACHE_CONTROL->value
-        );
+        $cacheControlDirectives = Collection::make($headers->get(
+            HeaderEnum::CACHE_CONTROL->value,
+            first: false,
+        ));
 
-        // Copy the cache-control header to the cdn-cache-control header
-        Craft::$app->getResponse()->getHeaders()->setDefault(
+        // Copy cache-control directives to the cdn-cache-control header
+        // @see https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
+        $swrDuration = Module::getInstance()->getConfig()->staticCacheStaleWhileRevalidateDuration;
+        $cdnCacheControlDirectives = $cacheControlDirectives->isEmpty()
+            ? Collection::make([
+                'public',
+                "max-age=$this->cacheDuration",
+                "stale-while-revalidate=$swrDuration",
+            ])
+            : $cacheControlDirectives;
+
+        $headers->setDefault(
             HeaderEnum::CDN_CACHE_CONTROL->value,
-            $cacheControl ?? "public, max-age=$this->cacheDuration",
+            $cdnCacheControlDirectives->implode(','),
         );
 
-        // Enable ESI processing
-        // Note: The Surrogate-Control header will cause Cloudflare to ignore
-        // the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
-        Craft::$app->getResponse()->getHeaders()->setDefault(
-            HeaderEnum::SURROGATE_CONTROL->value,
-            'content="ESI/1.0"',
-        );
-
-        // Capture, remove any existing headers so we can prepare them
+        // Capture and remove any existing headers, so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
         $headers->remove(HeaderEnum::CACHE_TAG->value);
-        $this->tags = $this->tags->push(...$existingTagsFromHeader);
+        $this->tags->push(...$existingTagsFromHeader);
+        $this->tags = $this->prepareTags(...$this->tags);
 
-        $this->prepareTags(...$this->tags)
-            ->each(fn(string $tag) => $headers->add(
+        Craft::warning(new PsrMessage('Adding cache tags to response', [
+            'tags' => $this->tags,
+        ]));
+
+        $this->tags
+            ->each(fn(StaticCacheTag $tag) => $headers->add(
                 HeaderEnum::CACHE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
     }
 
@@ -272,13 +280,13 @@ class StaticCache extends \yii\base\Component
         }
 
         Craft::info(new PsrMessage('Purging tags', [
-            'tags' => $tags->all(),
+            'tags' => $tags,
         ]));
 
         if ($isWebResponse) {
-            $tags->each(fn(string $tag) => $response->getHeaders()->add(
+            $tags->each(fn(StaticCacheTag $tag) => $response->getHeaders()->add(
                 HeaderEnum::CACHE_PURGE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
 
             return;
@@ -321,12 +329,8 @@ class StaticCache extends \yii\base\Component
     private function prepareTags(string|StaticCacheTag ...$tags): Collection
     {
         return Collection::make($tags)
-            ->map(function(string|StaticCacheTag $tag): string {
-                $tag = is_string($tag) ? StaticCacheTag::create($tag) : $tag;
-
-                return $tag->getValue();
-            })
-            ->filter()
-            ->unique();
+            ->map(fn(string|StaticCacheTag $tag) => is_string($tag) ? StaticCacheTag::create($tag) : $tag)
+            ->filter(fn(StaticCacheTag $tag) => (bool) $tag->getValue())
+            ->unique(fn(StaticCacheTag $tag) => $tag->getValue());
     }
 }
