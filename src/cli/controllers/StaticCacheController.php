@@ -17,6 +17,15 @@ class StaticCacheController extends Controller
         return ExitCode::OK;
     }
 
+    public function actionPurgeUrls(string ...$urls): int
+    {
+        $this->do('Purging URLs', function() use ($urls) {
+            Module::getInstance()->getStaticCache()->purgeUrls(...$urls);
+        });
+
+        return ExitCode::OK;
+    }
+
     public function actionPurgeTags(string ...$tags): int
     {
         $this->do('Purging tags', function() use ($tags) {
