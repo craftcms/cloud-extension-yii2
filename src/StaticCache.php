@@ -249,7 +249,7 @@ class StaticCache extends \yii\base\Component
         $this->tags->push(...$existingTagsFromHeader);
         $this->tags = $this->prepareTags(...$this->tags);
 
-        Craft::warning(new PsrMessage('Adding cache tags to response', [
+        Craft::info(new PsrMessage('Adding cache tags to response', [
             'tags' => $this->tags,
         ]));
 
