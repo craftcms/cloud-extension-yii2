@@ -294,7 +294,8 @@ class StaticCache extends \yii\base\Component
 
         // TODO: make sure we don't go over max header size
         Helper::makeGatewayApiRequest([
-            HeaderEnum::CACHE_PURGE_TAG->value => $tags->implode(','),
+            // Mapping to string because: https://github.com/laravel/framework/pull/54630
+            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => (string) $tag)->implode(','),
         ]);
     }
 
