@@ -145,7 +145,8 @@ class StaticCache extends \yii\base\Component
     private function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
     {
         $skip = Collection::make($event->tags)->contains(function(string $tag) {
-            return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag);
+            return preg_match('/element::craft\\\\elements\\\\User::/', $tag)
+                || preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag);
         });
 
         if ($skip) {
