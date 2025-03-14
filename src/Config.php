@@ -37,6 +37,7 @@ class Config extends BaseConfig
     public ?string $storageEndpoint = null;
     public bool $useAssetCdn = true;
     public bool $useArtifactCdn = true;
+    public ?string $logLevel = null;
     private bool $devMode = false;
     private ?string $region = null;
     private array $s3ClientOptions = [];

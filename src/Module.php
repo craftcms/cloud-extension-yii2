@@ -18,11 +18,13 @@ use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\imagetransforms\FallbackTransformer;
 use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
+use craft\log\MonologTarget;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
 use craft\web\Application as WebApplication;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Psr\Log\LogLevel;
 use yii\base\InvalidConfigException;
 
 /**
@@ -117,6 +119,13 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
         $this->registerCloudEventHandlers();
 
+        $app->getLog()->targets[] = Craft::createObject([
+            'class' => MonologTarget::class,
+            'name' => 'cloud',
+            'level' => $this->getConfig()->logLevel ?? (App::devMode() ? LogLevel::INFO : LogLevel::WARNING),
+            'categories' => ['craft\cloud\*'],
+        ]);
+
         if ($app instanceof WebApplication) {
             Craft::setAlias('@web', $app->getRequest()->getHostInfo());
 
@@ -208,7 +217,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     {
         $memoryLimit = ConfigHelper::sizeInBytes($limit) - ConfigHelper::sizeInBytes($offset);
         Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit((string) $memoryLimit);
-        Craft::info("phpMaxMemoryLimit set to $memoryLimit");
+        Craft::info("phpMaxMemoryLimit set to $memoryLimit", __METHOD__);
 
         return $memoryLimit;
     }
