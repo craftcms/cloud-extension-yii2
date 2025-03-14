@@ -96,7 +96,7 @@ class StaticCache extends \yii\base\Component
                     $this->purgeTags(...$this->tagsToPurge);
                 } catch (\Throwable $e) {
                     // TODO: log exception once output payload isn't a concern
-                    Craft::error('Failed to purge tags after request');
+                    Craft::error('Failed to purge tags after request', __METHOD__);
                 }
             }
         });
@@ -252,7 +252,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Adding cache tags to response', [
             'tags' => $this->tags,
-        ]));
+        ]), __METHOD__);
 
         $this->tags
             ->each(fn(StaticCacheTag $tag) => $headers->add(
@@ -282,7 +282,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging tags', [
             'tags' => $tags,
-        ]));
+        ]), __METHOD__);
 
         if ($isWebResponse) {
             $tags->each(fn(StaticCacheTag $tag) => $response->getHeaders()->add(
@@ -310,7 +310,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging URL prefixes', [
             'urlPrefixes' => $urlPrefixes->all(),
-        ]));
+        ]), __METHOD__);
 
         // TODO: make sure we don't go over max header size
         Helper::makeGatewayApiRequest([

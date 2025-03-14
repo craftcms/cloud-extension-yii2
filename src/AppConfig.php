@@ -5,11 +5,14 @@ namespace craft\cloud;
 use Craft;
 use craft\cache\DbCache;
 use craft\cloud\db\Command;
+use craft\cloud\fs\TmpFs;
 use craft\cloud\Helper as CloudHelper;
 use craft\cloud\queue\SqsQueue;
 use craft\cloud\runtime\event\CliHandler;
 use craft\cloud\web\AssetManager;
 use craft\db\Table;
+use craft\debug\Module as DebugModule;
+use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
@@ -131,11 +134,23 @@ class AppConfig
     private function getDefinitions(): array
     {
         return [
+            Temp::class => TmpFs::class,
+
             MonologTarget::class => function($container, $params, $config) {
                 return new MonologTarget([
                     'logContext' => false,
                 ] + $config);
             },
+
+            /**
+             * We have to use DI (can't use setModule), as
+             * \craft\web\Application::debugBootstrap will be called after and override it.
+             */
+            DebugModule::class => [
+                'class' => DebugModule::class,
+                'fs' => Craft::createObject(\craft\cloud\fs\StorageFs::class),
+                'dataPath' => 'debug',
+            ],
         ];
     }
 
