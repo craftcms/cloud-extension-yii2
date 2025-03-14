@@ -6,18 +6,14 @@ use Craft;
 use craft\base\Event;
 use craft\base\Model;
 use craft\cloud\fs\AssetsFs;
-use craft\cloud\fs\StorageFs;
-use craft\cloud\fs\TmpFs;
 use craft\cloud\twig\TwigExtension;
 use craft\cloud\web\assets\uploader\UploaderAsset;
 use craft\cloud\web\ResponseEventHandler;
 use craft\console\Application as ConsoleApplication;
-use craft\debug\Module as DebugModule;
 use craft\elements\Asset;
 use craft\events\DefineRulesEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\fs\Temp;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\imagetransforms\FallbackTransformer;
@@ -113,24 +109,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         $this->setMemoryLimit(
             ini_get('memory_limit'),
             $app->getErrorHandler()->memoryReserveSize,
-        );
-
-        Craft::$container->set(
-            Temp::class,
-            TmpFs::class,
-        );
-
-        /**
-         * We have to use DI here (can't use setModule), as
-         * \craft\web\Application::debugBootstrap will be called after and override it.
-         */
-        Craft::$container->set(
-            DebugModule::class,
-            [
-                'class' => DebugModule::class,
-                'fs' => Craft::createObject(StorageFs::class),
-                'dataPath' => 'debug',
-            ],
         );
 
         $this->setComponents([
