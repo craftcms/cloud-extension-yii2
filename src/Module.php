@@ -6,27 +6,25 @@ use Craft;
 use craft\base\Event;
 use craft\base\Model;
 use craft\cloud\fs\AssetsFs;
-use craft\cloud\fs\StorageFs;
-use craft\cloud\fs\TmpFs;
 use craft\cloud\twig\TwigExtension;
 use craft\cloud\web\assets\uploader\UploaderAsset;
 use craft\cloud\web\ResponseEventHandler;
 use craft\console\Application as ConsoleApplication;
-use craft\debug\Module as DebugModule;
 use craft\elements\Asset;
 use craft\events\DefineRulesEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\fs\Temp;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\imagetransforms\FallbackTransformer;
 use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
+use craft\log\MonologTarget;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
 use craft\web\Application as WebApplication;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Psr\Log\LogLevel;
 use yii\base\InvalidConfigException;
 
 /**
@@ -115,29 +113,18 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             $app->getErrorHandler()->memoryReserveSize,
         );
 
-        Craft::$container->set(
-            Temp::class,
-            TmpFs::class,
-        );
-
-        /**
-         * We have to use DI here (can't use setModule), as
-         * \craft\web\Application::debugBootstrap will be called after and override it.
-         */
-        Craft::$container->set(
-            DebugModule::class,
-            [
-                'class' => DebugModule::class,
-                'fs' => Craft::createObject(StorageFs::class),
-                'dataPath' => 'debug',
-            ],
-        );
-
         $this->setComponents([
             'staticCache' => StaticCache::class,
         ]);
 
         $this->registerCloudEventHandlers();
+
+        $app->getLog()->targets[] = Craft::createObject([
+            'class' => MonologTarget::class,
+            'name' => 'cloud',
+            'level' => $this->getConfig()->logLevel ?? (App::devMode() ? LogLevel::INFO : LogLevel::WARNING),
+            'categories' => ['craft\cloud\*'],
+        ]);
 
         if ($app instanceof WebApplication) {
             Craft::setAlias('@web', $app->getRequest()->getHostInfo());
@@ -230,7 +217,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     {
         $memoryLimit = ConfigHelper::sizeInBytes($limit) - ConfigHelper::sizeInBytes($offset);
         Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit((string) $memoryLimit);
-        Craft::info("phpMaxMemoryLimit set to $memoryLimit");
+        Craft::info("phpMaxMemoryLimit set to $memoryLimit", __METHOD__);
 
         return $memoryLimit;
     }

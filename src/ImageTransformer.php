@@ -87,7 +87,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
                 'bottom' => 1,
             };
         } catch (\UnhandledMatchError $e) {
-            Craft::warning("Invalid position value: `{$imageTransform->position}`");
+            Craft::warning("Invalid position value: `{$imageTransform->position}`", __METHOD__);
             return null;
         }
 
@@ -134,7 +134,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $paramString = http_build_query($params);
         $data = "$path#?$paramString";
 
-        Craft::info("Signing transform: `{$data}`");
+        Craft::info("Signing transform: `{$data}`", __METHOD__);
 
         // https://developers.cloudflare.com/workers/examples/signing-requests
         $hash = hash_hmac(
