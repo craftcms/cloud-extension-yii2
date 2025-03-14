@@ -281,7 +281,6 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging tags', [
             'tags' => $tags,
-            'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
         ]), __METHOD__);
 
         if ($isWebResponse) {
