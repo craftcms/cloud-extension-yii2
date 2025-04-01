@@ -435,6 +435,7 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
+        $this->invalidateCdnPath($path);
         parent::write($path, $contents, $config);
     }
 
@@ -460,6 +461,7 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
+        $this->invalidateCdnPath($path);
         parent::writeFileFromStream($path, $stream, $config);
     }
 
