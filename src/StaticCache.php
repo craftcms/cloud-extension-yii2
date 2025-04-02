@@ -14,7 +14,6 @@ use craft\utilities\ClearCaches;
 use craft\web\UrlManager;
 use craft\web\View;
 use Illuminate\Support\Collection;
-use League\Uri\Components\Path;
 use samdark\log\PsrMessage;
 use yii\base\Event;
 use yii\caching\TagDependency;
@@ -38,12 +37,14 @@ class StaticCache extends \yii\base\Component
     private ?int $cacheDuration = null;
     private Collection $tags;
     private Collection $tagsToPurge;
+    private Collection $urlsToPurge;
     private bool $collectingCacheInfo = false;
 
     public function init(): void
     {
         $this->tags = Collection::make();
         $this->tagsToPurge = Collection::make();
+        $this->urlsToPurge = Collection::make();
     }
 
     public function registerEventHandlers(): void
@@ -97,6 +98,15 @@ class StaticCache extends \yii\base\Component
                 } catch (\Throwable $e) {
                     // TODO: log exception once output payload isn't a concern
                     Craft::error('Failed to purge tags after request', __METHOD__);
+                }
+            }
+
+            if ($this->urlsToPurge->isNotEmpty()) {
+                try {
+                    $this->purgeUrls(...$this->urlsToPurge);
+                } catch (\Throwable $e) {
+                    // TODO: log exception once output payload isn't a concern
+                    Craft::error('Failed to purge tags after request');
                 }
             }
         });
@@ -166,12 +176,12 @@ class StaticCache extends \yii\base\Component
 
     private function handleSaveElement(ElementEvent $event): void
     {
-        $this->purgeElementUri($event->element);
+        $this->purgeElementUrl($event->element);
     }
 
     private function handleDeleteElement(ElementEvent $event): void
     {
-        $this->purgeElementUri($event->element);
+        $this->purgeElementUrl($event->element);
     }
 
     public function purgeAll(): void
@@ -198,23 +208,15 @@ class StaticCache extends \yii\base\Component
         $this->tagsToPurge->push($tag);
     }
 
-    private function purgeElementUri(ElementInterface $element): void
+    private function purgeElementUrl(ElementInterface $element): void
     {
-        $uri = $element->uri ?? null;
+        $url = $element->uri ?? null;
 
-        if (ElementHelper::isDraftOrRevision($element) || !$uri) {
+        if (ElementHelper::isDraftOrRevision($element) || !$url) {
             return;
         }
 
-        $uri = $element->getIsHomepage()
-            ? '/'
-            : Path::new($uri)->withLeadingSlash()->withoutTrailingSlash();
-
-        $tag = StaticCacheTag::create($uri)
-            ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
-            ->minify(false);
-
-        $this->tagsToPurge->prepend($tag);
+        $this->urlsToPurge->push($url);
     }
 
     private function addCacheHeadersToWebResponse(): void
@@ -296,6 +298,24 @@ class StaticCache extends \yii\base\Component
         Helper::makeGatewayApiRequest([
             // Mapping to string because: https://github.com/laravel/framework/pull/54630
             HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => (string) $tag)->implode(','),
+        ]);
+    }
+
+    public function purgeUrls(string ...$urls): void
+    {
+        $urls = Collection::make($urls)->filter()->unique();
+
+        if ($urls->isEmpty()) {
+            return;
+        }
+
+        Craft::info(new PsrMessage('Purging URLs', [
+            'urls' => $urls->all(),
+        ]));
+
+        // TODO: make sure we don't go over max header size
+        Helper::makeGatewayApiRequest([
+            HeaderEnum::CACHE_PURGE_URL->value => $urls->implode(','),
         ]);
     }
 
