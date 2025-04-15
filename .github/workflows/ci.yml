@@ -19,9 +19,6 @@ jobs:
       node_version: '18'
       php_version: '8.1'
       jobs: '["ecs", "phpstan", "prettier"]'
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
   bump-tag-version:
     needs: code-quality
     name: Bump and Tag Version
