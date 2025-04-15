@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   code-quality:
-    name: code-quality
     uses: craftcms/.github/.github/workflows/code-quality.yml@v3
     with:
       node_version: '18'
