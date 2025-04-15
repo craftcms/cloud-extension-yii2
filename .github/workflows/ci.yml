@@ -26,6 +26,7 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
   bump-tag-version:
+    needs: ci
     name: Bump and Tag Version
     runs-on: ubuntu-latest
     steps:
