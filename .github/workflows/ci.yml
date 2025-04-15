@@ -16,7 +16,6 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: '5'
       node_version: '18'
       php_version: '8.2'
       jobs: '["ecs", "phpstan", "prettier"]'
@@ -26,6 +25,7 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
   bump-tag-version:
+    needs: ci
     name: Bump and Tag Version
     runs-on: ubuntu-latest
     steps:
