@@ -126,7 +126,7 @@ Craft.CloudUploader = Craft.BaseUploader.extend(
           'cloud/assets/get-upload-url',
           {
             data: formData,
-          }
+          },
         );
 
         await axios.put(response.data.url, file, {
@@ -146,7 +146,7 @@ Craft.CloudUploader = Craft.BaseUploader.extend(
                   loaded: this._uploadedBytes,
                   total: this._totalBytes,
                 },
-              })
+              }),
             );
           },
         });
@@ -165,7 +165,7 @@ Craft.CloudUploader = Craft.BaseUploader.extend(
 
         response = await axios.post(this.settings.url, formData);
         this.element.dispatchEvent(
-          new CustomEvent('fileuploaddone', {detail: response.data})
+          new CustomEvent('fileuploaddone', {detail: response.data}),
         );
       } catch (error) {
         this.element.dispatchEvent(
@@ -174,7 +174,7 @@ Craft.CloudUploader = Craft.BaseUploader.extend(
               message: error?.response?.data?.message,
               filename: file.name,
             },
-          })
+          }),
         );
       } finally {
         this._lastUploadedBytes = 0;
@@ -216,7 +216,7 @@ Craft.CloudUploader = Craft.BaseUploader.extend(
       createAction: 'cloud/assets/create-asset',
       replaceAction: 'cloud/assets/replace-file',
     },
-  }
+  },
 );
 
 // Register it!

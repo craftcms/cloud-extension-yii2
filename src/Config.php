@@ -33,9 +33,11 @@ class Config extends BaseConfig
     public ?string $previewDomain = null;
     public bool $useQueue = true;
     public int $staticCacheDuration = DateTimeHelper::SECONDS_YEAR;
+    public int $staticCacheStaleWhileRevalidateDuration = DateTimeHelper::SECONDS_HOUR;
     public ?string $storageEndpoint = null;
     public bool $useAssetCdn = true;
     public bool $useArtifactCdn = true;
+    public ?string $logLevel = null;
     private bool $devMode = false;
     private ?string $region = null;
     private array $s3ClientOptions = [];

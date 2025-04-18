@@ -92,7 +92,12 @@ class StaticCache extends \yii\base\Component
 
         Craft::$app->onAfterRequest(function() {
             if ($this->tagsToPurge->isNotEmpty()) {
-                $this->purgeTags(...$this->tagsToPurge);
+                try {
+                    $this->purgeTags(...$this->tagsToPurge);
+                } catch (\Throwable $e) {
+                    // TODO: log exception once output payload isn't a concern
+                    Craft::error('Failed to purge tags after request', __METHOD__);
+                }
             }
         });
     }
@@ -118,7 +123,7 @@ class StaticCache extends \yii\base\Component
             /** @var int|null $duration */
             [$dependency, $duration] = Craft::$app->getElements()->stopCollectingCacheInfo();
             $this->collectingCacheInfo = false;
-            $tags = $dependency?->tags ?? [];
+            $tags = Collection::make($dependency?->tags ?? [])->map(fn(string $tag) => StaticCacheTag::create($tag)->minify(true));
             $this->tags->push(...$tags);
             $this->cacheDuration = $duration;
         }
@@ -139,15 +144,17 @@ class StaticCache extends \yii\base\Component
 
     private function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
     {
-        $skip = Collection::make($event->tags)->contains(function(string $tag) {
-            return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag);
+        $tags = Collection::make($event->tags)->map(fn(string $tag) => StaticCacheTag::create($tag)->minify(true));
+
+        $skip = $tags->contains(function(StaticCacheTag $tag) {
+            return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag->originalValue);
         });
 
         if ($skip) {
             return;
         }
 
-        $this->tagsToPurge->push(...$event->tags);
+        $this->tagsToPurge->push(...$tags);
     }
 
     private function handleRegisterCacheOptions(RegisterCacheOptionsEvent $event): void
@@ -177,20 +184,12 @@ class StaticCache extends \yii\base\Component
 
     public function purgeGateway(): void
     {
-        $tag = StaticCacheTag::create(
-            Module::getInstance()->getConfig()->environmentId,
-        )->minify(false);
-
-        $this->tagsToPurge->push($tag);
+        $this->tagsToPurge->push(Module::getInstance()->getConfig()->environmentId);
     }
 
     public function purgeCdn(): void
     {
-        $tag = StaticCacheTag::create(
-            Module::getInstance()->getConfig()->environmentId,
-        )->withPrefix(self::CDN_PREFIX)->minify(false);
-
-        $this->tagsToPurge->push($tag);
+        $this->tagsToPurge->push(self::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId);
     }
 
     private function purgeElementUri(ElementInterface $element): void
@@ -205,11 +204,8 @@ class StaticCache extends \yii\base\Component
             ? '/'
             : Path::new($uri)->withLeadingSlash()->withoutTrailingSlash();
 
-        $tag = StaticCacheTag::create($uri)
-            ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
-            ->minify(false);
-
-        $this->tagsToPurge->prepend($tag);
+        $environmentId = Module::getInstance()->getConfig()->environmentId;
+        $this->tagsToPurge->prepend("$environmentId:$uri");
     }
 
     private function addCacheHeadersToWebResponse(): void
@@ -217,33 +213,41 @@ class StaticCache extends \yii\base\Component
         $this->cacheDuration = $this->cacheDuration ?? Module::getInstance()->getConfig()->staticCacheDuration;
         $headers = Craft::$app->getResponse()->getHeaders();
 
-        $cacheControl = Craft::$app->getResponse()->getHeaders()->get(
-            HeaderEnum::CACHE_CONTROL->value
-        );
+        $cacheControlDirectives = Collection::make($headers->get(
+            HeaderEnum::CACHE_CONTROL->value,
+            first: false,
+        ));
 
-        // Copy the cache-control header to the cdn-cache-control header
-        Craft::$app->getResponse()->getHeaders()->setDefault(
+        // Copy cache-control directives to the cdn-cache-control header
+        // @see https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
+        $swrDuration = Module::getInstance()->getConfig()->staticCacheStaleWhileRevalidateDuration;
+        $cdnCacheControlDirectives = $cacheControlDirectives->isEmpty()
+            ? Collection::make([
+                'public',
+                "max-age=$this->cacheDuration",
+                "stale-while-revalidate=$swrDuration",
+            ])
+            : $cacheControlDirectives;
+
+        $headers->setDefault(
             HeaderEnum::CDN_CACHE_CONTROL->value,
-            $cacheControl ?? "public, max-age=$this->cacheDuration",
+            $cdnCacheControlDirectives->implode(','),
         );
 
-        // Enable ESI processing
-        // Note: The Surrogate-Control header will cause Cloudflare to ignore
-        // the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
-        Craft::$app->getResponse()->getHeaders()->setDefault(
-            HeaderEnum::SURROGATE_CONTROL->value,
-            'content="ESI/1.0"',
-        );
-
-        // Capture, remove any existing headers so we can prepare them
+        // Capture and remove any existing headers, so we can prepare them
         $existingTagsFromHeader = Collection::make($headers->get(HeaderEnum::CACHE_TAG->value, first: false) ?? []);
         $headers->remove(HeaderEnum::CACHE_TAG->value);
-        $this->tags = $this->tags->push(...$existingTagsFromHeader);
+        $this->tags->push(...$existingTagsFromHeader);
+        $this->tags = $this->prepareTags(...$this->tags);
 
-        $this->prepareTags(...$this->tags)
-            ->each(fn(string $tag) => $headers->add(
+        Craft::info(new PsrMessage('Adding cache tags to response', [
+            'tags' => $this->tags,
+        ]), __METHOD__);
+
+        $this->tags
+            ->each(fn(StaticCacheTag $tag) => $headers->add(
                 HeaderEnum::CACHE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
     }
 
@@ -267,13 +271,13 @@ class StaticCache extends \yii\base\Component
         }
 
         Craft::info(new PsrMessage('Purging tags', [
-            'tags' => $tags->all(),
-        ]));
+            'tags' => $tags,
+        ]), __METHOD__);
 
         if ($isWebResponse) {
-            $tags->each(fn(string $tag) => $response->getHeaders()->add(
+            $tags->each(fn(StaticCacheTag $tag) => $response->getHeaders()->add(
                 HeaderEnum::CACHE_PURGE_TAG->value,
-                $tag,
+                $tag->getValue(),
             ));
 
             return;
@@ -281,7 +285,8 @@ class StaticCache extends \yii\base\Component
 
         // TODO: make sure we don't go over max header size
         Helper::makeGatewayApiRequest([
-            HeaderEnum::CACHE_PURGE_TAG->value => $tags->implode(','),
+            // Mapping to string because: https://github.com/laravel/framework/pull/54630
+            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => (string) $tag)->implode(','),
         ]);
     }
 
@@ -295,7 +300,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging URL prefixes', [
             'urlPrefixes' => $urlPrefixes->all(),
-        ]));
+        ]), __METHOD__);
 
         // TODO: make sure we don't go over max header size
         Helper::makeGatewayApiRequest([
@@ -316,12 +321,8 @@ class StaticCache extends \yii\base\Component
     private function prepareTags(string|StaticCacheTag ...$tags): Collection
     {
         return Collection::make($tags)
-            ->map(function(string|StaticCacheTag $tag): string {
-                $tag = is_string($tag) ? StaticCacheTag::create($tag) : $tag;
-
-                return $tag->getValue();
-            })
-            ->filter()
-            ->unique();
+            ->map(fn(string|StaticCacheTag $tag) => is_string($tag) ? StaticCacheTag::create($tag) : $tag)
+            ->filter(fn(StaticCacheTag $tag) => (bool) $tag->getValue())
+            ->unique(fn(StaticCacheTag $tag) => $tag->getValue());
     }
 }

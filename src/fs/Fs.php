@@ -84,22 +84,18 @@ abstract class Fs extends FlysystemFs
      */
     public function getRootUrl(): ?string
     {
-        try {
-            return $this->createUrl();
-        } catch (FsException $e) {
+        if (!$this->hasUrls) {
             return null;
         }
+
+        return $this->createUrl();
     }
 
     public function createUrl(string $path = ''): UriInterface
     {
         $baseUrl = $this->useLocalFs
-            ? $this->getLocalFs()->getRootUrl()
+            ? $this->getLocalFs()->getRootUrl() ?? '/'
             : Module::getInstance()->getConfig()->cdnBaseUrl;
-
-        if (!$baseUrl) {
-            throw new FsException('Filesystem is not configured with a valid base URL.');
-        }
 
         // If an alias is unparsed by now, we have to fall back to a root relative URL.
         // This likely means this is a console request and @web isn't set.
@@ -435,6 +431,7 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
+        $this->invalidateCdnPath($path);
         parent::write($path, $contents, $config);
     }
 
@@ -460,6 +457,7 @@ abstract class Fs extends FlysystemFs
             return;
         }
 
+        $this->invalidateCdnPath($path);
         parent::writeFileFromStream($path, $stream, $config);
     }
 

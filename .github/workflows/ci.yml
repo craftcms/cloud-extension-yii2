@@ -1,9 +1,10 @@
-name: ci
+name: CI
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - 1.x
+      - 2.x
   pull_request:
 permissions:
   contents: read
@@ -11,16 +12,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  ci:
-    name: ci
-    uses: craftcms/.github/.github/workflows/ci.yml@v3
+  code-quality:
+    name: Code Quality
+    uses: craftcms/.github/.github/workflows/code-quality.yml@v3
     with:
-      craft_version: '4'
       node_version: '18'
       php_version: '8.1'
       jobs: '["ecs", "phpstan", "prettier"]'
-      notify_slack: true
-      slack_subteam: <!subteam^SGFL9NKNZ>
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
