@@ -3,8 +3,9 @@
 namespace craft\cloud\queue;
 
 use Craft;
+use craft\queue\ReleasableQueueInterface;
 
-class SqsQueue extends \yii\queue\sqs\Queue
+class SqsQueue extends \yii\queue\sqs\Queue implements ReleasableQueueInterface
 {
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
@@ -31,5 +32,15 @@ class SqsQueue extends \yii\queue\sqs\Queue
 
         // Return anything but null, as we don't have an SQS message ID yet.
         return '';
+    }
+
+    public function releaseAll(): void
+    {
+        $this->clear();
+    }
+
+    public function release(string $id): void
+    {
+        Craft::info('Releasing single jobs is not supported.');
     }
 }
