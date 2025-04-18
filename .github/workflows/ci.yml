@@ -19,15 +19,3 @@ jobs:
       node_version: '18'
       php_version: '8.1'
       jobs: '["ecs", "phpstan", "prettier"]'
-  bump-tag-version:
-    needs: code-quality
-    name: Bump and Tag Version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: jefflinse/pr-semver-bump@v1.6.0
-        name: Bump and Tag Version
-        with:
-          mode: bump
-          repo-token: ${{ secrets.PR_SEMVER_BUMP_TOKEN }}
-          base-branch: true
