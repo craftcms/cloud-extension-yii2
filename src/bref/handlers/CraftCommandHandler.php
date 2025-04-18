@@ -17,7 +17,7 @@ final class CraftCommandHandler implements Handler
      */
     public function handle(mixed $event, Context $context): array
     {
-        if (! isset($event['command'])) {
+        if (!isset($event['command'])) {
             throw new InvalidArgumentException('No command found.');
         }
 
