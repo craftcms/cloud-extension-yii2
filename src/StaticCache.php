@@ -123,7 +123,7 @@ class StaticCache extends \yii\base\Component
             /** @var int|null $duration */
             [$dependency, $duration] = Craft::$app->getElements()->stopCollectingCacheInfo();
             $this->collectingCacheInfo = false;
-            $tags = $dependency?->tags ?? [];
+            $tags = Collection::make($dependency?->tags ?? [])->map(fn(string $tag) => StaticCacheTag::create($tag)->minify(true));
             $this->tags->push(...$tags);
             $this->cacheDuration = $duration;
         }
@@ -144,15 +144,17 @@ class StaticCache extends \yii\base\Component
 
     private function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
     {
-        $skip = Collection::make($event->tags)->contains(function(string $tag) {
-            return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag);
+        $tags = Collection::make($event->tags)->map(fn(string $tag) => StaticCacheTag::create($tag)->minify(true));
+
+        $skip = $tags->contains(function(StaticCacheTag $tag) {
+            return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag->originalValue);
         });
 
         if ($skip) {
             return;
         }
 
-        $this->tagsToPurge->push(...$event->tags);
+        $this->tagsToPurge->push(...$tags);
     }
 
     private function handleRegisterCacheOptions(RegisterCacheOptionsEvent $event): void
@@ -182,20 +184,12 @@ class StaticCache extends \yii\base\Component
 
     public function purgeGateway(): void
     {
-        $tag = StaticCacheTag::create(
-            Module::getInstance()->getConfig()->environmentId,
-        )->minify(false);
-
-        $this->tagsToPurge->push($tag);
+        $this->tagsToPurge->push(Module::getInstance()->getConfig()->environmentId);
     }
 
     public function purgeCdn(): void
     {
-        $tag = StaticCacheTag::create(
-            Module::getInstance()->getConfig()->environmentId,
-        )->withPrefix(self::CDN_PREFIX)->minify(false);
-
-        $this->tagsToPurge->push($tag);
+        $this->tagsToPurge->push(self::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId);
     }
 
     private function purgeElementUri(ElementInterface $element): void
@@ -210,11 +204,8 @@ class StaticCache extends \yii\base\Component
             ? '/'
             : Path::new($uri)->withLeadingSlash()->withoutTrailingSlash();
 
-        $tag = StaticCacheTag::create($uri)
-            ->withPrefix(Module::getInstance()->getConfig()->environmentId . ':')
-            ->minify(false);
-
-        $this->tagsToPurge->prepend($tag);
+        $environmentId = Module::getInstance()->getConfig()->environmentId;
+        $this->tagsToPurge->prepend("$environmentId:$uri");
     }
 
     private function addCacheHeadersToWebResponse(): void

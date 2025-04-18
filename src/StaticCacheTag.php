@@ -5,7 +5,7 @@ namespace craft\cloud;
 class StaticCacheTag implements \Stringable, \JsonSerializable
 {
     public readonly string $originalValue;
-    private bool $minify = true;
+    private bool $minify = false;
 
     public function __construct(
         private string $value,
@@ -53,7 +53,7 @@ class StaticCacheTag implements \Stringable, \JsonSerializable
         return $this;
     }
 
-    public function minify(bool $minify = true): self
+    public function minify(bool $minify): self
     {
         $this->minify = $minify;
 
