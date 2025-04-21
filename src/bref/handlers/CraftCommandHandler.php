@@ -27,6 +27,6 @@ final class CraftCommandHandler implements Handler
 
         $entrypoint = new CraftEntrypoint();
 
-        return $entrypoint->command($command, $environment, 890);
+        return $entrypoint->lambdaCommand($command, $environment);
     }
 }

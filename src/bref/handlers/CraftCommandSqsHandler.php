@@ -9,6 +9,9 @@ use Craft;
 use craft\cloud\bref\craft\CraftEntrypoint;
 use RuntimeException;
 
+/**
+ * @internal
+ */
 final class CraftCommandSqsHandler extends SqsHandler
 {
     public function handleSqs(SqsEvent $event, Context $context): void
@@ -26,7 +29,7 @@ final class CraftCommandSqsHandler extends SqsHandler
 
             $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
 
-            $result = $entrypoint->command($command, $environment, 890);
+            $result = $entrypoint->lambdaCommand($command, $environment);
 
             $this->sendResultBack($callback, $result);
         }
