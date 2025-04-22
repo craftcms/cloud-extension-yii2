@@ -4,7 +4,7 @@ namespace craft\cloud\bref\handlers;
 
 use Bref\Context\Context;
 use Bref\Event\Handler;
-use craft\cloud\bref\craft\CraftEntrypoint;
+use craft\cloud\bref\craft\CraftCliEntrypoint;
 use InvalidArgumentException;
 
 /**
@@ -25,7 +25,7 @@ final class CraftCommandHandler implements Handler
 
         $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
 
-        $entrypoint = new CraftEntrypoint();
+        $entrypoint = new CraftCliEntrypoint();
 
         return $entrypoint->lambdaCommand($command, $environment);
     }

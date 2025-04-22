@@ -4,7 +4,7 @@ namespace craft\cloud\bref\craft;
 
 use Symfony\Component\Process\Process;
 
-final class CraftEntrypoint
+final class CraftCliEntrypoint
 {
     /**
      * We leave a 10-second buffer for Lambda to start up and shutdown gracefully.

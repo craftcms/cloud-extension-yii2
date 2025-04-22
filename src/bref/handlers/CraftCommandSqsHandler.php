@@ -6,7 +6,7 @@ use Bref\Context\Context;
 use Bref\Event\Sqs\SqsEvent;
 use Bref\Event\Sqs\SqsHandler;
 use Craft;
-use craft\cloud\bref\craft\CraftEntrypoint;
+use craft\cloud\bref\craft\CraftCliEntrypoint;
 use RuntimeException;
 
 /**
@@ -16,7 +16,7 @@ final class CraftCommandSqsHandler extends SqsHandler
 {
     public function handleSqs(SqsEvent $event, Context $context): void
     {
-        $entrypoint = new CraftEntrypoint();
+        $entrypoint = new CraftCliEntrypoint();
 
         foreach ($event->getRecords() as $record) {
             $record->getBody();
