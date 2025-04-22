@@ -1,6 +1,5 @@
 {
   "minimum-stability": "dev",
-  "prefer-stable": true,
   "name": "craftcms/cloud",
   "type": "yii2-extension",
   "require": {
