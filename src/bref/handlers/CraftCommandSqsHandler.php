@@ -21,7 +21,7 @@ final class CraftCommandSqsHandler extends SqsHandler
         foreach ($event->getRecords() as $record) {
             $record->getBody();
 
-            $body = json_decode($record->getBody(), flags: JSON_THROW_ON_ERROR);
+            $body = json_decode($record->getBody(), associative: true, flags: JSON_THROW_ON_ERROR);
 
             $command = $body['command'] ?? throw new RuntimeException('Command not found');
 
