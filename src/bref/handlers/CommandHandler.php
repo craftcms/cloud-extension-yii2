@@ -10,7 +10,7 @@ use InvalidArgumentException;
 /**
  * @internal
  */
-final class CraftCommandHandler implements Handler
+final class CommandHandler implements Handler
 {
     /**
      * @inheritDoc

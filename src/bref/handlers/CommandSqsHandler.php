@@ -5,7 +5,6 @@ namespace craft\cloud\bref\handlers;
 use Bref\Context\Context;
 use Bref\Event\Sqs\SqsEvent;
 use Bref\Event\Sqs\SqsHandler;
-use Bref\Event\Sqs\SqsRecord;
 use craft\cloud\bref\craft\CraftCliEntrypoint;
 use RuntimeException;
 use Throwable;
@@ -13,7 +12,7 @@ use Throwable;
 /**
  * @internal
  */
-final class CraftCommandSqsHandler extends SqsHandler
+final class CommandSqsHandler extends SqsHandler
 {
     private CraftCliEntrypoint $entrypoint;
 
@@ -31,28 +30,21 @@ final class CraftCommandSqsHandler extends SqsHandler
 
             $callback = $payload['callback'] ?? throw new RuntimeException("Callback URL not found. Message: [$message]");
 
-            $result = $this->runCommand($payload, $context);
+            $command = $payload['command'] ?? throw new RuntimeException('Command not found');
+
+            $result = $this->runCommand($command, $context);
 
             $this->sendResultBack($callback, $result);
         }
     }
 
-    public function runCommand(array $payload, Context $context): array
+    public function runCommand(string $command, Context $context): array
     {
         try {
-            $command = $payload['command'] ?? throw new RuntimeException("Command not found");
-
             $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
 
             return $this->entrypoint->lambdaCommand($command, $environment);
         } catch (Throwable $t) {
-            if (! isset($command)) {
-                return [
-                    'exit_code' => 1,
-                    'output' => 'Internal Error: command is undefined',
-                ];
-            }
-
             return [
                 'exit_code' => 1,
                 'output' => "Error running command [$command]: " . $t->getMessage(),
