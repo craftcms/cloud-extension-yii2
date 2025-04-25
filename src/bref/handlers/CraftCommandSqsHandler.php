@@ -25,11 +25,38 @@ final class CraftCommandSqsHandler extends SqsHandler
     public function handleSqs(SqsEvent $event, Context $context): void
     {
         foreach ($event->getRecords() as $record) {
-            $callback = $body['callback'] ?? throw new RuntimeException('Callback URL not found');
+            $message = $record->getBody();
 
-            $result = $this->runCommand($record, $context);
+            $payload = json_decode($message, associative: true, flags: JSON_THROW_ON_ERROR);
+
+            $callback = $payload['callback'] ?? throw new RuntimeException("Callback URL not found. Message: [$message]");
+
+            $result = $this->runCommand($payload, $context);
 
             $this->sendResultBack($callback, $result);
+        }
+    }
+
+    public function runCommand(array $payload, Context $context): array
+    {
+        try {
+            $command = $payload['command'] ?? throw new RuntimeException("Command not found");
+
+            $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
+
+            return $this->entrypoint->lambdaCommand($command, $environment);
+        } catch (Throwable $t) {
+            if (! isset($command)) {
+                return [
+                    'exit_code' => 1,
+                    'output' => 'Internal Error: command is undefined',
+                ];
+            }
+
+            return [
+                'exit_code' => 1,
+                'output' => "Error running command [$command]: " . $t->getMessage(),
+            ];
         }
     }
 
@@ -58,32 +85,5 @@ final class CraftCommandSqsHandler extends SqsHandler
         curl_exec($ch);
 
         curl_close($ch);
-    }
-
-    public function runCommand(SqsRecord $record, Context $context): array
-    {
-        try {
-            $record->getBody();
-
-            $body = json_decode($record->getBody(), associative: true, flags: JSON_THROW_ON_ERROR);
-
-            $command = $body['command'] ?? throw new RuntimeException('Command not found');
-
-            $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
-
-            return $this->entrypoint->lambdaCommand($command, $environment);
-        } catch (Throwable $t) {
-            if (! isset($command)) {
-                return [
-                    'exit_code' => 1,
-                    'output' => 'Internal Error: command is undefined',
-                ];
-            }
-
-            return [
-                'exit_code' => 1,
-                'output' => "Error running command [$command]: " . $t->getMessage(),
-            ];
-        }
     }
 }
