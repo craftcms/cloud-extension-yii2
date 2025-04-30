@@ -85,7 +85,7 @@ class QueueController extends Controller
             $jobFound = $queue->executeJob($jobId);
 
             if (!$jobFound) {
-                $this->stdout("Job not found: `$jobId`");
+                $this->stdout($this->markdownToAnsi("Job not found: `$jobId`"));
                 $this->stdout("\n");
             }
         });
