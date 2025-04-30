@@ -6,7 +6,6 @@ use Craft;
 use craft\cloud\queue\TestJob;
 use craft\console\Controller;
 use craft\queue\Queue;
-use yii\console\Exception as CliException;
 use yii\console\ExitCode;
 use yii\queue\ExecEvent;
 
@@ -86,7 +85,8 @@ class QueueController extends Controller
             $jobFound = $queue->executeJob($jobId);
 
             if (!$jobFound) {
-                throw new CliException('Job not found.');
+                $this->stdout("Job not found: `$jobId`");
+                $this->stdout("\n");
             }
         });
 
