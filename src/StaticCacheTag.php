@@ -2,10 +2,13 @@
 
 namespace craft\cloud;
 
+use craft\base\ElementInterface;
+
 class StaticCacheTag implements \Stringable, \JsonSerializable
 {
     public readonly string $originalValue;
     private bool $minify = false;
+    public ?ElementInterface $element = null;
 
     public function __construct(
         private string $value,
@@ -18,11 +21,22 @@ class StaticCacheTag implements \Stringable, \JsonSerializable
         return new self($value);
     }
 
+    public function withElement(?ElementInterface $element): self
+    {
+        $this->element = $element;
+
+        return $this;
+    }
+
     public function jsonSerialize(): false|string
     {
         return json_encode([
             'value' => $this->getValue(),
             'originalValue' => $this->originalValue,
+            'element' => $this->element?->getAttributes([
+                'id',
+                'url',
+            ]),
         ]);
     }
 
