@@ -280,13 +280,13 @@ class StaticCache extends \yii\base\Component
         ]), __METHOD__);
 
         $headers = Collection::make([
-            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => $tag->getValue())->unique()->filter()->implode(','),
-            HeaderEnum::CACHE_PURGE_ELEMENT->value => $tags->map(fn(StaticCacheTag $tag) => $tag->element->id ?? null)->unique()->filter()->implode(','),
+            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => $tag->getValue())->unique()->filter(),
+            HeaderEnum::CACHE_PURGE_ELEMENT->value => $tags->map(fn(StaticCacheTag $tag) => $tag->element->id ?? null)->unique()->filter(),
         ]);
 
         if ($isWebResponse) {
-            $headers->each(function(string $value, string $name) use ($response) {
-                $response->getHeaders()->add($name, $value);
+            $headers->each(function(Collection $values, string $name) use ($response) {
+                $values->each(fn($value) => $response->getHeaders()->add($name, $value));
             });
 
             return;
