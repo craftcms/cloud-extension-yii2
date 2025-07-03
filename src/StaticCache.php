@@ -245,10 +245,17 @@ class StaticCache extends \yii\base\Component
         ]), __METHOD__);
 
         $this->tags
-            ->each(fn(StaticCacheTag $tag) => $headers->add(
-                HeaderEnum::CACHE_TAG->value,
-                $tag->getValue(),
-            ));
+            ->each(function(StaticCacheTag $tag) use ($headers) {
+                $headers->add(
+                    HeaderEnum::ORIGIN_CACHE_TAG->value,
+                    $tag->getValue(),
+                );
+
+                $headers->add(
+                    HeaderEnum::CACHE_TAG->value,
+                    $tag->getValue(),
+                );
+            });
     }
 
     public function purgeTags(string|StaticCacheTag ...$tags): void
