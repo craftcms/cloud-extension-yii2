@@ -8,7 +8,8 @@ final class CurlResponse
         public readonly string|bool $body,
         public readonly int $statusCode,
         public readonly string $curlError,
-    ) {}
+    ) {
+    }
 
     public function successful(): bool
     {
