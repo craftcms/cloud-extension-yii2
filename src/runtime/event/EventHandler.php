@@ -9,7 +9,10 @@ use Bref\FpmRuntime\FpmHandler;
 class EventHandler implements Handler
 {
     private FpmHandler $fpmHandler;
+
+    # include buffer, so PHP dies before Lambda
     private const MAX_SECONDS = 900 - 3;
+
     private const MAX_HTTP_SECONDS = 60;
 
     public function __construct(FpmHandler $fpmHandler)
