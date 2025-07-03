@@ -6,6 +6,7 @@ use Bref\Context\Context;
 use Bref\Event\Sqs\SqsEvent;
 use Bref\Event\Sqs\SqsHandler;
 use craft\cloud\bref\craft\CraftCliEntrypoint;
+use craft\cloud\bref\curl\CurlClient;
 use RuntimeException;
 use Throwable;
 
@@ -54,28 +55,36 @@ final class CommandSqsHandler extends SqsHandler
 
     private function sendResultBack(string $url, array $body): void
     {
-        $project = getenv('CRAFT_CLOUD_PROJECT_ID');
-
-        $environment = getenv('CRAFT_CLOUD_ENVIRONMENT_ID');
+        $client = new CurlClient();
 
         $body = json_encode($body);
 
-        $ch = curl_init($url);
+        $response = $client->post($url, $body);
 
-        curl_setopt($ch, CURLOPT_POST, true);
+        if ($response->curlError) {
+            fwrite(STDERR, $body . "\n");
 
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            $body = json_encode([
+                'exit_code' => 255,
+                'output' => "cURL request failed: $response->curlError",
+            ]);
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $client->post($url, $body);
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($body),
-            "User-Agent: Craft/Cloud/$project/$environment",
-        ]);
+            return;
+        }
 
-        curl_exec($ch);
+        if (!$response->successful()) {
+            fwrite(STDERR, $body . "\n");
 
-        curl_close($ch);
+            $body = json_encode([
+                'exit_code' => 255,
+                'output' => "Failed to send command output: [$response->statusCode] [$response->body]",
+            ]);
+
+            $client->post($url, $body);
+
+            return;
+        }
     }
 }
