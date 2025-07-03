@@ -74,7 +74,7 @@ final class CommandSqsHandler extends SqsHandler
             return;
         }
 
-        if (! $response->successful()) {
+        if (!$response->successful()) {
             fwrite(STDERR, $body . "\n");
 
             $body = json_encode([
