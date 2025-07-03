@@ -107,6 +107,11 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
     protected function bootstrapCloud(ConsoleApplication|WebApplication $app): void
     {
+        ini_set(
+            'max_execution_time',
+            (string) $this->getMaxExecutionSeconds(),
+        );
+
         // Set Craft memory limit to just below PHP's limit
         $this->setMemoryLimit(
             ini_get('memory_limit'),
@@ -220,5 +225,15 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         Craft::info("phpMaxMemoryLimit set to $memoryLimit", __METHOD__);
 
         return $memoryLimit;
+    }
+
+    private function getMaxExecutionSeconds(): int
+    {
+        if (Craft::$app->getRequest()->getIsWebRequest()) {
+            return 60;
+        }
+
+        // Include a buffer so PHP's limit is always hit before Lambda's
+        return 900 - 3;
     }
 }
