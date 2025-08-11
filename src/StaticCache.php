@@ -322,7 +322,8 @@ class StaticCache extends \yii\base\Component
         return
             Craft::$app->getView()->templateMode === View::TEMPLATE_MODE_SITE &&
             $response instanceof \craft\web\Response &&
-            $response->getIsOk();
+            $response->getIsOk() &&
+            !$response->getHeaders()->get(HeaderEnum::WWW_AUTHENTICATE->value);
     }
 
     private function prepareTags(string|StaticCacheTag ...$tags): Collection

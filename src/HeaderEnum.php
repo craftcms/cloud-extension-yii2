@@ -15,6 +15,7 @@ enum HeaderEnum: string
     case DEV_MODE = 'Dev-Mode';
     case REQUEST_TYPE = 'Request-Type';
     case SET_COOKIE = 'Set-Cookie';
+    case WWW_AUTHENTICATE = 'WWW-Authenticate';
 
     public function matches(string $name): bool
     {
