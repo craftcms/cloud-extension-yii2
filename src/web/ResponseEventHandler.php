@@ -6,6 +6,7 @@ use Craft;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\HeaderEnum;
 use craft\cloud\Module;
+use craft\helpers\StringHelper;
 use craft\web\Response;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -15,6 +16,7 @@ use yii\web\ServerErrorHttpException;
 class ResponseEventHandler
 {
     private Response $response;
+    private const MAX_HEADER_LENGTH = 16 * 1024;
 
     public function __construct()
     {
@@ -37,6 +39,9 @@ class ResponseEventHandler
         }
 
         $this->normalizeHeaders();
+
+        // TODO: check if "1 MB for the total combined size of request line and header values" is exceeded
+        // @see https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html
 
         if (Module::getInstance()->getConfig()->gzipResponse) {
             $this->gzipResponse();
@@ -118,50 +123,36 @@ class ResponseEventHandler
                     return;
                 }
 
-                $value = $this->joinHeaderValues($values);
-
-                // Header value can't exceed 16KB
-                // https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/#a-few-things-to-remember
-                if (HeaderEnum::CACHE_TAG->matches($name)) {
-                    $value = $this->limitHeaderToBytes($value, 16 * 1024);
-                }
-
-                $this->response->getHeaders()->set($name, $value);
+                $this->response->getHeaders()->set(
+                    $name,
+                    $this->joinHeaderValues($values),
+                );
             });
     }
 
-    /**
-     * API Gateway v2, Cloudflare, and Bref all flatten multi-value headers into a CSV single string.
-     * Rather than relying on this, we join them ourselves.
-     *
-     * @see https://developers.cloudflare.com/workers/runtime-apis/headers/#differences
-     * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
-     * @see https://github.com/brefphp/bref/issues/1691
-     */
-    private function joinHeaderValues(array $values, string $glue = ','): string
+    private function joinHeaderValues(array $values): string
     {
         return Collection::make($values)
             ->filter()
-            ->join($glue);
+            ->reduce(function($result, $value) {
+                $newResult = $result === '' ? $value : $result . ',' . $value;
+
+                // @see https://developers.cloudflare.com/workers/platform/limits/#request-limits
+                if (StringHelper::byteLength($newResult) > self::MAX_HEADER_LENGTH) {
+                    Craft::error(
+                        sprintf("Header value exceeds the maximum length of %s bytes; truncating response.", self::MAX_HEADER_LENGTH),
+                        __METHOD__,
+                    );
+
+                    return $result;
+                }
+
+                return $newResult;
+            }, '');
     }
 
     private function addDevModeHeader(): void
     {
         $this->response->getHeaders()->set(HeaderEnum::DEV_MODE->value, '1');
-    }
-
-    private function limitHeaderToBytes(string $value, int $bytes, ?string $glue = ','): string
-    {
-        $truncated = substr($value, 0, $bytes);
-
-        if (!$glue) {
-            return $truncated;
-        }
-
-        $length = strrpos($truncated, $glue);
-
-        return $length === false
-            ? $truncated
-            : substr($truncated, 0, $length);
     }
 }

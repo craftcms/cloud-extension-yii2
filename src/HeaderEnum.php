@@ -4,7 +4,6 @@ namespace craft\cloud;
 
 enum HeaderEnum: string
 {
-    case ORIGIN_CACHE_TAG = 'Origin-Cache-Tag';
     case CACHE_TAG = 'Cache-Tag';
     case CACHE_PURGE_TAG = 'Cache-Purge-Tag';
     case CACHE_PURGE_PREFIX = 'Cache-Purge-Prefix';
