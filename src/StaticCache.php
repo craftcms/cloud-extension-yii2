@@ -247,11 +247,6 @@ class StaticCache extends \yii\base\Component
         $this->tags
             ->each(function(StaticCacheTag $tag) use ($headers) {
                 $headers->add(
-                    HeaderEnum::ORIGIN_CACHE_TAG->value,
-                    $tag->getValue(),
-                );
-
-                $headers->add(
                     HeaderEnum::CACHE_TAG->value,
                     $tag->getValue(),
                 );
