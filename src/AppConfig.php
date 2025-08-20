@@ -78,10 +78,10 @@ class AppConfig
         return function() {
             return Craft::createObject([
                 'class' => CraftQueue::class,
-                'ttr' => CliHandler::maxExecutionSeconds(),
+                'ttr' => CliHandler::MAX_EXECUTION_SECONDS,
                 'proxyQueue' => Module::getInstance()->getConfig()->useQueue ? [
                     'class' => SqsQueue::class,
-                    'ttr' => CliHandler::maxExecutionSeconds(),
+                    'ttr' => CliHandler::MAX_EXECUTION_SECONDS,
                     'url' => Module::getInstance()->getConfig()->sqsUrl,
                     'region' => Module::getInstance()->getConfig()->getRegion(),
                 ] : null,

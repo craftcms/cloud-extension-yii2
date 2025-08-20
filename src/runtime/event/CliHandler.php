@@ -11,11 +11,10 @@ use yii\base\Exception;
 
 class CliHandler implements Handler
 {
-    public const MAX_EXECUTION_SECONDS = 900;
-    public const MAX_EXECUTION_BUFFER_SECONDS = 3;
     public ?Process $process = null;
     protected string $scriptPath = '/var/task/craft';
     protected ?float $totalRunningTime = null;
+    public const MAX_EXECUTION_SECONDS = 900 - 3;
 
     /**
      * @inheritDoc
@@ -65,15 +64,5 @@ class CliHandler implements Handler
         }
 
         return max(0, microtime(true) - $this->process->getStartTime());
-    }
-
-    public function shouldRetry(): bool
-    {
-        return $this->getTotalRunningTime() < static::maxExecutionSeconds();
-    }
-
-    public static function maxExecutionSeconds(): int
-    {
-        return static::MAX_EXECUTION_SECONDS - self::MAX_EXECUTION_BUFFER_SECONDS;
     }
 }
