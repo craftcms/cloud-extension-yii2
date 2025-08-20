@@ -2,12 +2,19 @@
 
 namespace craft\cloud\bref\craft;
 
+use craft\cloud\AppConfig;
+use craft\cloud\queue\SqsQueue;
+use craft\cloud\runtime\event\EventHandler;
 use Symfony\Component\Process\Process;
 
 final class CraftCliEntrypoint
 {
     /**
      * We leave a 10-second buffer for Lambda to start up and shutdown gracefully.
+     *
+     * TODO: use this value to set max_execution_time, queue ttr:
+     * - @see EventHandler::MAX_SECONDS, EventHandler::MAX_HTTP_SECONDS
+     * - @see SqsQueue::ttr(), AppConfig::getQueue()
      */
     private const LAMBDA_EXECUTION_LIMIT = 890;
 
