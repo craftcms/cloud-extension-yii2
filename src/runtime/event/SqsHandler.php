@@ -40,13 +40,12 @@ class SqsHandler extends \Bref\Event\Sqs\SqsHandler
         } catch (Throwable $e) {
             echo $e->getMessage();
 
-            $this->markAsFailed($record);
-
             (new CliHandler())->handle([
                 'command' => "cloud/queue/fail {$jobId} --message={$e->getMessage()}",
             ], $context, true);
 
-            // Rethrow to ensure record is marked as failed, regardless of the `ReportBatchItemFailures` setting.
+            // Ensure record is marked as failed, regardless of the `ReportBatchItemFailures` setting.
+            // Throwing instead of calling $this->markAsFailed, as we only support single-record batches.
             throw $e;
         }
     }
