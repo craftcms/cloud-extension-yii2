@@ -61,7 +61,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface
                 self::SIGNING_PARAM => $this->sign($path, $transformParams),
             ];
 
-        return UrlHelper::urlWithParams($assetUrl, $params);
+        $query = http_build_query($params);
+
+        return UrlHelper::url($assetUrl . ($query ? "?{$query}" : ''));
     }
 
     /**
