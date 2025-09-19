@@ -26,11 +26,13 @@ class BuildController extends Controller
 
     public function actionBuild(): int
     {
-        $this->validateEdition($this->craftEdition);
+        return $this->run('/cloud/info');
 
-        return $this->run('/cloud/asset-bundles/publish', [
-            'to' => $this->publishAssetBundlesTo,
-        ]);
+        // $this->validateEdition($this->craftEdition);
+        //
+        // return $this->run('/cloud/asset-bundles/publish', [
+        //     'to' => $this->publishAssetBundlesTo,
+        // ]);
     }
 
     private function validateEdition(string $edition): void
