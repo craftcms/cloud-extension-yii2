@@ -34,14 +34,14 @@ class AppConfig
         $config = $this->config;
         $config['id'] = $this->getId();
 
-        if ($this->appType === 'web') {
-            $config['components']['session'] = $this->getSession();
-        }
+        // if ($this->appType === 'web') {
+        //     $config['components']['session'] = $this->getSession();
+        // }
 
-        $config['components']['cache'] = $this->getCache();
-        $config['components']['queue'] = $this->getQueue();
-        $config['components']['assetManager'] = $this->getAssetManager();
-        $config['container']['definitions'] = $this->getDefinitions();
+        // $config['components']['cache'] = $this->getCache();
+        // $config['components']['queue'] = $this->getQueue();
+        // $config['components']['assetManager'] = $this->getAssetManager();
+        // $config['container']['definitions'] = $this->getDefinitions();
 
         return $config;
     }
