@@ -17,6 +17,15 @@ class BuildArtifactsFs extends BuildsFs
         parent::init();
     }
 
+    public function getRootUrl(): ?string
+    {
+        if (!$this->hasUrls) {
+            return null;
+        }
+
+        return Module::getInstance()->getConfig()->artifactBaseUrl;
+    }
+
     public function getPrefix(): string
     {
         if (!Module::getInstance()->getConfig()->useArtifactCdn) {
