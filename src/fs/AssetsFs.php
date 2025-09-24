@@ -3,12 +3,16 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
+use craft\helpers\App;
 use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\UriInterface;
+use League\Uri\Modifier;
 
 class AssetsFs extends CdnFs
 {
     public ?string $localFsPath = '@webroot/uploads';
     public ?string $localFsUrl = '/uploads';
+    protected static bool $showUrlSetting = true;
 
     public function init(): void
     {
@@ -22,6 +26,21 @@ class AssetsFs extends CdnFs
     public static function displayName(): string
     {
         return 'Craft Cloud';
+    }
+
+    public function getRootUrl(): ?string
+    {
+        if (!$this->hasUrls) {
+            return null;
+        }
+
+        $url = App::parseEnv($this->url);
+
+        if (is_string($url)) {
+            $url = rtrim($url, '/');
+        }
+
+        return $url ? "$url/$this->subpath/" : null;
     }
 
     public function getPrefix(): string

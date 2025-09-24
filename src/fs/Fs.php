@@ -42,7 +42,6 @@ abstract class Fs extends FlysystemFs
     public ?string $subpath = null;
     public ?string $localFsPath = null;
     public ?string $localFsUrl = null;
-    public ?string $url = '__URL__';
     public bool $useLocalFs = false;
 
     /**
