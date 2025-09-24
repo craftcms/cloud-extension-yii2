@@ -93,10 +93,15 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         ])->whereNotNull()->all();
     }
 
-    private function getGravityValue(ImageTransform $imageTransform): ?array
+    private function getGravityValue(ImageTransform $imageTransform): null|array|string
     {
         if ($this->asset->getHasFocalPoint()) {
             return $this->asset->getFocalPoint();
+        }
+
+
+        if ($imageTransform->position === 'face' || $imageTransform->position[0] === 'face') {
+            return 'face';
         }
 
         if ($imageTransform->position === 'center-center') {
