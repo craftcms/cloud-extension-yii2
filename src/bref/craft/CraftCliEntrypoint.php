@@ -5,6 +5,7 @@ namespace craft\cloud\bref\craft;
 use craft\cloud\AppConfig;
 use craft\cloud\queue\SqsQueue;
 use craft\cloud\runtime\event\EventHandler;
+use Bref\Context\Context;
 use Symfony\Component\Process\Process;
 
 final class CraftCliEntrypoint
@@ -37,8 +38,22 @@ final class CraftCliEntrypoint
         ];
     }
 
-    public function lambdaCommand(string $command, array $environment)
+    public function lambdaCommand(string $command, Context $context): array
     {
+        $environment = $this->invocationContext($context);
+
         return $this->command($command, $environment, self::LAMBDA_EXECUTION_LIMIT);
+    }
+
+    public function craftJob(string $jobId, Context $context): array
+    {
+        $environment = $this->invocationContext($context);
+
+        return $this->command("cloud/queue/exec $jobId", $environment, self::LAMBDA_EXECUTION_LIMIT);
+    }
+
+    private function invocationContext(Context $context): array
+    {
+        return ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
     }
 }
