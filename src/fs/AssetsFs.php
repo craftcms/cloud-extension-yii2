@@ -5,8 +5,6 @@ namespace craft\cloud\fs;
 use craft\cloud\Module;
 use craft\helpers\App;
 use League\Uri\Contracts\SegmentedPathInterface;
-use League\Uri\Contracts\UriInterface;
-use League\Uri\Modifier;
 
 class AssetsFs extends Fs
 {
