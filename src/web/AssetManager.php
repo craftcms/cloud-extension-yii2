@@ -35,9 +35,7 @@ class AssetManager extends \craft\web\AssetManager
             FileHelper::createDirectory($this->basePath);
         }
 
-        if (Module::getInstance()->getConfig()->useAssetBundleCdn) {
-            $this->baseUrl = Modifier::from((new CpResourcesFs())->createUrl())->removeTrailingSlash();
-        }
+        $this->baseUrl = Modifier::from((new CpResourcesFs())->createUrl())->removeTrailingSlash();
     }
 
     protected function hash($path): string

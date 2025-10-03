@@ -9,12 +9,11 @@ class BuildArtifactsFs extends BuildsFs
 {
     public bool $hasUrls = true;
 
-    // public function init(): void
-    // {
-    //     $this->useLocalFs = !Module::getInstance()->getConfig()->useArtifactCdn;
-    //     $this->localFsUrl = Module::getInstance()->getConfig()->artifactBaseUrl ?? $this->localFsUrl;
-    //     parent::init();
-    // }
+    public function init(): void
+    {
+        $this->baseUrl = Module::getInstance()->getConfig()->artifactBaseUrl;
+        parent::init();
+    }
 
     public function createBucketPrefix(): HierarchicalPath
     {

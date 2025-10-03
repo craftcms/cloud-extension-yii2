@@ -8,14 +8,14 @@ use League\Uri\Components\HierarchicalPath;
 class AssetsFs extends Fs
 {
     protected ?string $expires = '1 years';
-    // public ?string $localFsPath = '@webroot/uploads';
-    // public ?string $localFsUrl = '/uploads';
+    public ?string $localFsPath = '@webroot/uploads';
+    public ?string $localFsUrl = '/uploads';
 
-    // public function init(): void
-    // {
-    //     $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
-    //     parent::init();
-    // }
+    public function init(): void
+    {
+        $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
+        parent::init();
+    }
 
     /**
      * @inheritDoc
