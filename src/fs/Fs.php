@@ -242,7 +242,8 @@ abstract class Fs extends FlysystemFs
 
     protected function createBucketPrefix(): SegmentedPathInterface
     {
-        return HierarchicalPath::fromRelative(Module::getInstance()->getConfig()->environmentId);
+        // Note: ENVIRONMENT_ID may not be set when running cloud/build
+        return HierarchicalPath::fromRelative(Module::getInstance()->getConfig()->environmentId ?? '');
     }
 
     protected function createPath(string $path): SegmentedPathInterface
