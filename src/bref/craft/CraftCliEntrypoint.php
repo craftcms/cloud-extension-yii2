@@ -2,10 +2,10 @@
 
 namespace craft\cloud\bref\craft;
 
+use Bref\Context\Context;
 use craft\cloud\AppConfig;
 use craft\cloud\queue\SqsQueue;
 use craft\cloud\runtime\event\EventHandler;
-use Bref\Context\Context;
 use Symfony\Component\Process\Process;
 
 final class CraftCliEntrypoint
