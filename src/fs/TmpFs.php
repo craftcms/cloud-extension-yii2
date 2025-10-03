@@ -6,11 +6,8 @@ use League\Uri\Components\HierarchicalPath;
 
 class TmpFs extends StorageFs
 {
-    public function getPrefix(): string
+    public function createBucketPrefix(): HierarchicalPath
     {
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'tmp',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('tmp');
     }
 }

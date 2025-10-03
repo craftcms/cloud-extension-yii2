@@ -5,16 +5,17 @@ namespace craft\cloud\fs;
 use craft\cloud\Module;
 use League\Uri\Components\HierarchicalPath;
 
-class AssetsFs extends CdnFs
+class AssetsFs extends Fs
 {
-    public ?string $localFsPath = '@webroot/uploads';
-    public ?string $localFsUrl = '/uploads';
+    protected ?string $expires = '1 years';
+    // public ?string $localFsPath = '@webroot/uploads';
+    // public ?string $localFsUrl = '/uploads';
 
-    public function init(): void
-    {
-        $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
-        parent::init();
-    }
+    // public function init(): void
+    // {
+    //     $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
+    //     parent::init();
+    // }
 
     /**
      * @inheritDoc
@@ -24,15 +25,8 @@ class AssetsFs extends CdnFs
         return 'Craft Cloud';
     }
 
-    public function getPrefix(): string
+    public function createBucketPrefix(): HierarchicalPath
     {
-        if (!Module::getInstance()->getConfig()->useAssetCdn) {
-            return '';
-        }
-
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'assets',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('assets');
     }
 }
