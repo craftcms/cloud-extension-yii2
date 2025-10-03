@@ -11,6 +11,21 @@
     placeholder: "path/to/subpath"|t('cloud'),
 }) }}
 
+<div id="base-url-field-container" class="{% if not fs.hasUrls %}hidden{% endif %}">
+    {{ forms.autosuggestField({
+        label: "Base URL"|t('app'),
+        instructions: "The base URL to the files in this filesystem."|t('app'),
+        id: 'baseUrl',
+        class: ['ltr'],
+        name: 'baseUrl',
+        suggestEnvVars: true,
+        suggestAliases: true,
+        value: (fs is defined ? fs.baseUrl : null),
+        errors: (fs is defined ? fs.getErrors('baseUrl') : null),
+        placeholder: "//example.com/path/to/folder"
+    }) }}
+</div>
+
 {% set cacheDurationInput %}
     {% set expires = fs.expires ? fs.expires|split(' ') : null %}
 
