@@ -174,7 +174,7 @@ abstract class Fs extends FlysystemFs
         return new AwsS3V3Adapter(
             client: $this->getClient(),
             bucket: $this->getBucketName(),
-            prefix: $this->createBucketPath(''),
+            prefix: $this->createBucketPath('')->toString(),
         );
     }
 
@@ -251,8 +251,7 @@ abstract class Fs extends FlysystemFs
 
     public function createBucketPath(string $path): HierarchicalPath
     {
-        return $this->createBucketPrefix()
-            ->append($this->createPath($path));
+        return $this->createBucketPrefix()->append($this->createPath($path));
     }
 
     public function getBucketName(): ?string
@@ -316,7 +315,7 @@ abstract class Fs extends FlysystemFs
 
             $command = $this->getClient()->getCommand($command, [
                 'Bucket' => $this->getBucketName(),
-                'Key' => $this->createBucketPath($path),
+                'Key' => $this->createBucketPath($path)->toString(),
             ] + $commandConfig);
 
             $request = $this->getClient()->createPresignedRequest(
