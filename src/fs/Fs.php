@@ -3,7 +3,7 @@
 namespace craft\cloud\fs;
 
 use Aws\Credentials\Credentials;
-use Aws\Handler\GuzzleV6\GuzzleHandler;
+use Aws\Handler\Guzzle\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
@@ -26,6 +26,7 @@ use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\Visibility;
 use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 use League\Uri\Contracts\UriInterface;
 use League\Uri\Modifier;
 use Throwable;
@@ -239,12 +240,12 @@ abstract class Fs extends FlysystemFs
         ]);
     }
 
-    protected function createBucketPrefix(): HierarchicalPath
+    protected function createBucketPrefix(): SegmentedPathInterface
     {
         return HierarchicalPath::fromRelative(Module::getInstance()->getConfig()->environmentId);
     }
 
-    protected function createPath(string $path): HierarchicalPath
+    protected function createPath(string $path): SegmentedPathInterface
     {
         return HierarchicalPath::fromRelative(
             $this->subpath ?? '',
@@ -252,7 +253,7 @@ abstract class Fs extends FlysystemFs
         )->withoutEmptySegments();
     }
 
-    public function createBucketPath(string $path): HierarchicalPath
+    public function createBucketPath(string $path): SegmentedPathInterface
     {
         return $this->createBucketPrefix()->append($this->createPath($path));
     }

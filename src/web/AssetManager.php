@@ -5,7 +5,6 @@ namespace craft\cloud\web;
 use Craft;
 use craft\cloud\fs\CpResourcesFs;
 use craft\cloud\Helper;
-use craft\cloud\Module;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use League\Uri\Components\HierarchicalPath;
