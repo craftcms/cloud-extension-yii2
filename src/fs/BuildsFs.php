@@ -3,14 +3,14 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 abstract class BuildsFs extends Fs
 {
     public bool $hasUrls = true;
     protected ?string $expires = '1 years';
 
-    public function createBucketPrefix(): HierarchicalPath
+    public function createBucketPrefix(): SegmentedPathInterface
     {
         return parent::createBucketPrefix()
             ->append('builds')

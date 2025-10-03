@@ -2,11 +2,11 @@
 
 namespace craft\cloud\fs;
 
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 class StorageFs extends Fs
 {
-    public function createBucketPrefix(): HierarchicalPath
+    public function createBucketPrefix(): SegmentedPathInterface
     {
         return parent::createBucketPrefix()->append('storage');
     }

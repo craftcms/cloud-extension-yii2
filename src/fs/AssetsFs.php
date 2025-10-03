@@ -3,7 +3,7 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 class AssetsFs extends Fs
 {
@@ -25,7 +25,7 @@ class AssetsFs extends Fs
         return 'Craft Cloud';
     }
 
-    public function createBucketPrefix(): HierarchicalPath
+    public function createBucketPrefix(): SegmentedPathInterface
     {
         return parent::createBucketPrefix()->append('assets');
     }

@@ -3,7 +3,7 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 class BuildArtifactsFs extends BuildsFs
 {
@@ -15,7 +15,7 @@ class BuildArtifactsFs extends BuildsFs
         parent::init();
     }
 
-    public function createBucketPrefix(): HierarchicalPath
+    public function createBucketPrefix(): SegmentedPathInterface
     {
         return parent::createBucketPrefix()->append('artifacts');
     }
