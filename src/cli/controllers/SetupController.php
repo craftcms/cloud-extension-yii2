@@ -18,7 +18,7 @@ class SetupController extends Controller
         $this->runAction('config');
         $this->stdout(PHP_EOL);
         $this->stdout("Your project is ready to deploy to Craft Cloud!\n", BaseConsole::FG_GREEN);
-        $this->stdout("See https://craftcms.com/knowledge-base/cloud-getting-started\n");
+        $this->stdout("See https://craftcms.com/docs/cloud/config.html\n");
 
         return ExitCode::OK;
     }

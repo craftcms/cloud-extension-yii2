@@ -2,15 +2,12 @@
 
 namespace craft\cloud\fs;
 
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 class TmpFs extends StorageFs
 {
-    public function getPrefix(): string
+    public function createBucketPrefix(): SegmentedPathInterface
     {
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'tmp',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('tmp');
     }
 }

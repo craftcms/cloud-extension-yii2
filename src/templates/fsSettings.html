@@ -9,7 +9,24 @@
     value: fs.subpath,
     errors: fs.getErrors('subpath'),
     placeholder: "path/to/subpath"|t('cloud'),
+    tip: "This value will be appended to all paths and URLs for the filesystem."|t('cloud'),
 }) }}
+
+<div id="base-url-field-container" class="{% if not fs.hasUrls %}hidden{% endif %}">
+    {{ forms.autosuggestField({
+        label: "Base URL"|t('app'),
+        instructions: "The base URL to the files in this filesystem."|t('app'),
+        id: 'baseUrl',
+        class: ['ltr'],
+        name: 'baseUrl',
+        suggestEnvVars: true,
+        suggestAliases: true,
+        value: (fs is defined ? fs.baseUrl : null),
+        errors: (fs is defined ? fs.getErrors('baseUrl') : null),
+        placeholder: "//example.com/path/to/folder",
+        tip: 'Use **rewrite rules** to override the default `cdn.craft.cloud` URL. <a class="go" href="https://craftcms.com/docs/cloud/redirects.html#rewrites">Learn more</a>'|t('cloud'),
+    }) }}
+</div>
 
 {% set cacheDurationInput %}
     {% set expires = fs.expires ? fs.expires|split(' ') : null %}
@@ -39,7 +56,7 @@
     label: "Cache Duration"|t,
     instructions: 'The Cache-Control duration set on assets in this filesystem.',
     id: 'cacheDuration',
-    tip: 'Caching files for one year is recommended for optimal performance. <a class="go" href="https://craftcms.com/knowledge-base/choosing-a-cache-duration-for-assets">Read more</a>',
+    tip: 'Caching files for one year is recommended for optimal performance. <a class="go" href="https://craftcms.com/knowledge-base/choosing-a-cache-duration-for-assets">Learn more</a>',
 }, cacheDurationInput) }}
 
 <hr />
@@ -72,7 +89,6 @@
     errors: fs.getErrors('localFsUrl') ?? null,
     required: true,
     placeholder: "@web/path/to/folder",
-    tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
     }) }}
 </div>
 
@@ -88,7 +104,6 @@
     errors: fs.getErrors('localFsPath') ?? null,
     required: true,
     placeholder: "@webroot/path/to/folder"|t('app'),
-    tip: "The **Subpath** setting will be appended to this value."|t('cloud'),
 }) }}
 
 {% js %}

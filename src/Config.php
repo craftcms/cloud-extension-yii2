@@ -29,14 +29,12 @@ class Config extends BaseConfig
     public ?string $accessToken = null;
     public ?string $redisUrl = null;
     public ?string $signingKey = null;
-    public bool $useAssetBundleCdn = true;
     public ?string $previewDomain = null;
     public bool $useQueue = true;
     public int $staticCacheDuration = DateTimeHelper::SECONDS_YEAR;
     public int $staticCacheStaleWhileRevalidateDuration = DateTimeHelper::SECONDS_HOUR;
     public ?string $storageEndpoint = null;
     public bool $useAssetCdn = true;
-    public bool $useArtifactCdn = true;
     public ?string $logLevel = null;
     private bool $devMode = false;
     private ?string $region = null;
@@ -47,8 +45,6 @@ class Config extends BaseConfig
         if (!Helper::isCraftCloud()) {
             $this->gzipResponse = false;
             $this->useAssetCdn = false;
-            $this->useArtifactCdn = false;
-            $this->useAssetBundleCdn = false;
             $this->useQueue = false;
         }
     }
@@ -155,12 +151,6 @@ class Config extends BaseConfig
             ['environmentId', 'projectId'],
             'required',
             'when' => fn(Config $model) => $model->useAssetCdn,
-        ];
-
-        $rules[] = [
-            ['environmentId', 'buildId'],
-            'required',
-            'when' => fn(Config $model) => $model->useArtifactCdn,
         ];
 
         return $rules;
