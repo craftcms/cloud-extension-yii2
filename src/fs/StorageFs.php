@@ -6,13 +6,8 @@ use League\Uri\Components\HierarchicalPath;
 
 class StorageFs extends Fs
 {
-    public bool $hasUrls = false;
-
-    public function getPrefix(): string
+    public function createBucketPrefix(): HierarchicalPath
     {
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'storage',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('storage');
     }
 }

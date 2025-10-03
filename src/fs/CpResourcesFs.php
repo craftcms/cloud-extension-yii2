@@ -6,11 +6,8 @@ use League\Uri\Components\HierarchicalPath;
 
 class CpResourcesFs extends BuildsFs
 {
-    public function getPrefix(): string
+    public function createBucketPrefix(): HierarchicalPath
     {
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'cpresources',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('cpresources');
     }
 }
