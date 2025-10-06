@@ -3,11 +3,13 @@
 namespace craft\cloud\fs;
 
 use Aws\Credentials\Credentials;
-use Aws\Handler\GuzzleV6\GuzzleHandler;
+use Aws\Handler\Guzzle\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\cloud\Module;
+use craft\cloud\StaticCache;
+use craft\cloud\StaticCacheTag;
 use craft\errors\FsException;
 use craft\flysystem\base\FlysystemFs;
 use craft\fs\Local;
@@ -24,15 +26,13 @@ use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\Visibility;
 use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 use League\Uri\Contracts\UriInterface;
 use League\Uri\Modifier;
 use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
- *
- * @property-read string $bucketName
- * @property-read string $prefix
  * @property-read ?string $settingsHtml
  */
 abstract class Fs extends FlysystemFs
@@ -44,8 +44,8 @@ abstract class Fs extends FlysystemFs
     public ?string $subpath = null;
     public ?string $localFsPath = null;
     public ?string $localFsUrl = null;
-    public ?string $url = '__URL__';
     public bool $useLocalFs = false;
+    public ?string $baseUrl = null;
 
     /**
      * @inheritDoc
@@ -66,13 +66,13 @@ abstract class Fs extends FlysystemFs
     protected function getLocalFs(): Local
     {
         $path = $this->localFsPath
-            ? HierarchicalPath::new($this->localFsPath)->append($this->prefixPath())->toString()
+            ? $this->createPath('')->prepend($this->localFsPath)
             : null;
 
         $this->localFs = $this->localFs ?? Craft::createObject([
             'class' => Local::class,
             'hasUrls' => $this->hasUrls,
-            'path' => $path,
+            'path' => $path->toString(),
             'url' => $this->localFsUrl,
         ]);
 
@@ -93,19 +93,16 @@ abstract class Fs extends FlysystemFs
 
     public function createUrl(string $path = ''): UriInterface
     {
-        $baseUrl = $this->useLocalFs
-            ? $this->getLocalFs()->getRootUrl() ?? '/'
-            : Module::getInstance()->getConfig()->cdnBaseUrl;
+        $baseUrl = $this->useLocalFs ? $this->getLocalFs()->getRootUrl() : $this->baseUrl;
 
-        // If an alias is unparsed by now, we have to fall back to a root relative URL.
-        // This likely means this is a console request and @web isn't set.
-        if (str_starts_with($baseUrl, '@')) {
-            $baseUrl = '/';
+        if ($baseUrl) {
+            return Modifier::from($baseUrl)
+                ->appendSegment($this->createPath($path))
+                ->getUri();
         }
 
-        return Modifier::from($baseUrl)
-            ->appendSegment($this->prefixPath($path))
-            ->removeEmptySegments()
+        return Modifier::from(Module::getInstance()->getConfig()->cdnBaseUrl)
+            ->appendSegment($this->createBucketPath($path))
             ->getUri();
     }
 
@@ -145,6 +142,7 @@ abstract class Fs extends FlysystemFs
         return array_merge(parent::settingsAttributes(), [
             'expires',
             'subpath',
+            'baseUrl',
             'localFsPath',
             'localFsUrl',
         ]);
@@ -180,7 +178,7 @@ abstract class Fs extends FlysystemFs
         return new AwsS3V3Adapter(
             client: $this->getClient(),
             bucket: $this->getBucketName(),
-            prefix: $this->prefixPath(),
+            prefix: $this->createBucketPath('')->toString(),
         );
     }
 
@@ -189,7 +187,22 @@ abstract class Fs extends FlysystemFs
      */
     protected function invalidateCdnPath(string $path): bool
     {
-        return true;
+        if (!$this->hasUrls) {
+            return true;
+        }
+
+        try {
+            $prefix = StaticCache::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId . ':';
+            $tag = StaticCacheTag::create($this->createBucketPath($path))
+                ->minify(false)
+                ->withPrefix($prefix);
+
+            Module::getInstance()->getStaticCache()->purgeTags($tag);
+
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -227,24 +240,23 @@ abstract class Fs extends FlysystemFs
         ]);
     }
 
-    protected function getPrefix(): string
+    protected function createBucketPrefix(): SegmentedPathInterface
     {
-        if ($this->useLocalFs) {
-            return '';
-        }
-
-        return HierarchicalPath::fromRelative(Module::getInstance()->getConfig()->environmentId)
-            ->withoutEmptySegments()
-            ->withoutTrailingSlash();
+        // Note: ENVIRONMENT_ID may not be set when running cloud/build
+        return HierarchicalPath::fromRelative(Module::getInstance()->getConfig()->environmentId ?? '');
     }
 
-    public function prefixPath(string $path = ''): string
+    protected function createPath(string $path): SegmentedPathInterface
     {
         return HierarchicalPath::fromRelative(
-            $this->getPrefix(),
             $this->subpath ?? '',
             $path,
         )->withoutEmptySegments();
+    }
+
+    public function createBucketPath(string $path): SegmentedPathInterface
+    {
+        return $this->createBucketPrefix()->append($this->createPath($path));
     }
 
     public function getBucketName(): ?string
@@ -308,7 +320,7 @@ abstract class Fs extends FlysystemFs
 
             $command = $this->getClient()->getCommand($command, [
                 'Bucket' => $this->getBucketName(),
-                'Key' => $this->prefixPath($path),
+                'Key' => $this->createBucketPath($path)->toString(),
             ] + $commandConfig);
 
             $request = $this->getClient()->createPresignedRequest(

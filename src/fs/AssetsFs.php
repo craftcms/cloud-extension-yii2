@@ -3,10 +3,11 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
-class AssetsFs extends CdnFs
+class AssetsFs extends Fs
 {
+    protected ?string $expires = '1 years';
     public ?string $localFsPath = '@webroot/uploads';
     public ?string $localFsUrl = '/uploads';
 
@@ -24,15 +25,8 @@ class AssetsFs extends CdnFs
         return 'Craft Cloud';
     }
 
-    public function getPrefix(): string
+    public function createBucketPrefix(): SegmentedPathInterface
     {
-        if (!Module::getInstance()->getConfig()->useAssetCdn) {
-            return '';
-        }
-
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'assets',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('assets');
     }
 }

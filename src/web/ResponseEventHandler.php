@@ -94,7 +94,7 @@ class ResponseEventHandler
         // TODO: use \League\Flysystem\AwsS3V3\AwsS3V3Adapter::temporaryUrl?
         $cmd = $fs->getClient()->getCommand('GetObject', [
             'Bucket' => $fs->getBucketName(),
-            'Key' => $fs->prefixPath($path),
+            'Key' => $fs->createBucketPath($path),
             'ResponseContentDisposition' => $this->response->getHeaders()->get('content-disposition'),
         ]);
 

@@ -5,7 +5,6 @@ namespace craft\cloud\web;
 use Craft;
 use craft\cloud\fs\CpResourcesFs;
 use craft\cloud\Helper;
-use craft\cloud\Module;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use League\Uri\Components\HierarchicalPath;
@@ -35,9 +34,7 @@ class AssetManager extends \craft\web\AssetManager
             FileHelper::createDirectory($this->basePath);
         }
 
-        if (Module::getInstance()->getConfig()->useAssetBundleCdn) {
-            $this->baseUrl = Modifier::from((new CpResourcesFs())->createUrl())->removeTrailingSlash();
-        }
+        $this->baseUrl = Modifier::from((new CpResourcesFs())->createUrl())->removeTrailingSlash();
     }
 
     protected function hash($path): string
