@@ -42,9 +42,7 @@ final class CommandSqsHandler extends SqsHandler
     public function runCommand(string $command, Context $context): array
     {
         try {
-            $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
-
-            return $this->entrypoint->lambdaCommand($command, $environment);
+            return $this->entrypoint->lambdaCommand($command, $context);
         } catch (Throwable $t) {
             return [
                 'exit_code' => 1,
