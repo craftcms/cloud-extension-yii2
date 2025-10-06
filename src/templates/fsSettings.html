@@ -107,8 +107,7 @@
 }) }}
 
 {% js %}
-    const $urlField = $(document.getElementsByName('types[craft\\cloud\\fs\\AssetsFs][hasUrls]'))
-        .parent('button')
+    const $urlField = $('#types-craft-cloud-fs-AssetsFs-has-urls')
         .addClass('fieldtoggle')
         .data({target: '#types-craft-cloud-fs-AssetsFs-local-fs-url-field, #types-craft-cloud-fs-AssetsFs-cacheDuration-field, #types-craft-cloud-fs-AssetsFs-base-url-field-container'});
     new Craft.FieldToggle($urlField);
