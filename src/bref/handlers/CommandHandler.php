@@ -23,10 +23,8 @@ final class CommandHandler implements Handler
 
         $command = $event['command'];
 
-        $environment = ['LAMBDA_INVOCATION_CONTEXT' => json_encode($context, JSON_THROW_ON_ERROR)];
-
         $entrypoint = new CraftCliEntrypoint();
 
-        return $entrypoint->lambdaCommand($command, $environment);
+        return $entrypoint->lambdaCommand($command, $context);
     }
 }
