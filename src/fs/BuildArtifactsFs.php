@@ -3,29 +3,20 @@
 namespace craft\cloud\fs;
 
 use craft\cloud\Module;
-use League\Uri\Components\HierarchicalPath;
+use League\Uri\Contracts\SegmentedPathInterface;
 
 class BuildArtifactsFs extends BuildsFs
 {
-    public ?string $localFsPath = '@webroot';
-    public ?string $localFsUrl = '@web';
+    public bool $hasUrls = true;
 
     public function init(): void
     {
-        $this->useLocalFs = !Module::getInstance()->getConfig()->useArtifactCdn;
-        $this->localFsUrl = Module::getInstance()->getConfig()->artifactBaseUrl ?? $this->localFsUrl;
+        $this->baseUrl = Module::getInstance()->getConfig()->artifactBaseUrl;
         parent::init();
     }
 
-    public function getPrefix(): string
+    public function createBucketPrefix(): SegmentedPathInterface
     {
-        if (!Module::getInstance()->getConfig()->useArtifactCdn) {
-            return '';
-        }
-
-        return HierarchicalPath::fromRelative(
-            parent::getPrefix(),
-            'artifacts',
-        )->withoutEmptySegments()->withoutTrailingSlash();
+        return parent::createBucketPrefix()->append('artifacts');
     }
 }
