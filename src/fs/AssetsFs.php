@@ -2,7 +2,6 @@
 
 namespace craft\cloud\fs;
 
-use craft\cloud\Helper;
 use craft\cloud\Module;
 use League\Uri\Contracts\SegmentedPathInterface;
 
