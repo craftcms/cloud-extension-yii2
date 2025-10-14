@@ -2,6 +2,7 @@
 
 namespace craft\cloud\fs;
 
+use craft\cloud\Helper;
 use craft\cloud\Module;
 use League\Uri\Contracts\SegmentedPathInterface;
 
@@ -13,8 +14,12 @@ class AssetsFs extends Fs
 
     public function init(): void
     {
-        $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
         parent::init();
+        $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
+
+        if ($this->useLocalFs) {
+            $this->baseUrl = $this->getLocalFs()->getRootUrl();
+        }
     }
 
     /**
