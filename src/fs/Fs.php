@@ -70,7 +70,7 @@ abstract class Fs extends FlysystemFs
         $this->localFs = $this->localFs ?? Craft::createObject([
             'class' => Local::class,
             'hasUrls' => $this->hasUrls,
-            'path' => $path->toString(),
+            'path' => $path?->toString(),
             'url' => $this->localFsUrl,
         ]);
 
@@ -91,10 +91,8 @@ abstract class Fs extends FlysystemFs
 
     public function createUrl(string $path = ''): UriInterface
     {
-        $baseUrl = $this->useLocalFs ? $this->getLocalFs()->getRootUrl() : $this->baseUrl;
-
-        if ($baseUrl) {
-            return Modifier::from($baseUrl)
+        if ($this->baseUrl) {
+            return Modifier::from($this->baseUrl)
                 ->appendSegment($this->createPath($path))
                 ->getUri();
         }
