@@ -80,7 +80,7 @@ class AssetsController extends Controller
             'targetFilename' => Assets::prepareAssetName($originalFilename),
             'filename' => $filename,
             'bucket' => $fs->getBucketName(),
-            'key' => $fs->createBucketPath($filename),
+            'key' => $fs->createBucketPath($filename)->toString(),
             'folderId' => $folder->id,
         ]);
     }
