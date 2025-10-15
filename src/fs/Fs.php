@@ -189,7 +189,7 @@ abstract class Fs extends FlysystemFs
 
         try {
             $prefix = StaticCache::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId . ':';
-            $tag = StaticCacheTag::create($this->createBucketPath($path))
+            $tag = StaticCacheTag::create($this->createBucketPath($path)->toString())
                 ->minify(false)
                 ->withPrefix($prefix);
 
