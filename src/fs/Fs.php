@@ -13,6 +13,7 @@ use craft\cloud\StaticCacheTag;
 use craft\errors\FsException;
 use craft\flysystem\base\FlysystemFs;
 use craft\fs\Local;
+use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\DateTimeHelper;
 use DateTime;
@@ -91,8 +92,16 @@ abstract class Fs extends FlysystemFs
 
     public function createUrl(string $path = ''): UriInterface
     {
-        if ($this->baseUrl) {
-            return Modifier::from($this->baseUrl)
+        if ($this->useLocalFs) {
+            return Modifier::from($this->getLocalFs()->getRootUrl() ?? '/')
+                ->appendSegment($this->createPath($path))
+                ->getUri();
+        }
+
+        $baseUrl = App::parseEnv($this->baseUrl);
+
+        if ($baseUrl) {
+            return Modifier::from($baseUrl)
                 ->appendSegment($this->createPath($path))
                 ->getUri();
         }
@@ -247,7 +256,7 @@ abstract class Fs extends FlysystemFs
     protected function createPath(string $path): SegmentedPathInterface
     {
         return HierarchicalPath::fromRelative(
-            $this->subpath ?? '',
+            App::parseEnv($this->subpath) ?? '',
             $path,
         )->withoutEmptySegments();
     }

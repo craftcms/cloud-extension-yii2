@@ -15,10 +15,6 @@ class AssetsFs extends Fs
     {
         parent::init();
         $this->useLocalFs = !Module::getInstance()->getConfig()->useAssetCdn;
-
-        if ($this->useLocalFs) {
-            $this->baseUrl = $this->getLocalFs()->getRootUrl();
-        }
     }
 
     /**

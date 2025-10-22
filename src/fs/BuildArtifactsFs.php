@@ -18,8 +18,9 @@ class BuildArtifactsFs extends BuildsFs
         $this->useLocalFs = !Helper::isCraftCloud();
         $this->baseUrl = Module::getInstance()->getConfig()->artifactBaseUrl;
 
-        if ($this->useLocalFs && !$this->baseUrl) {
-            $this->baseUrl = $this->getLocalFs()->getRootUrl();
+        // Allow local override via config/env
+        if ($this->baseUrl) {
+            $this->localFsUrl = $this->baseUrl;
         }
     }
 
