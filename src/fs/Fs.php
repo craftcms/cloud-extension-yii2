@@ -133,6 +133,7 @@ abstract class Fs extends FlysystemFs
         $behaviors['parser'] = [
             'class' => EnvAttributeParserBehavior::class,
             'attributes' => [
+                'subpath',
                 'baseUrl',
                 'localFsPath',
                 'localFsUrl',
@@ -257,7 +258,7 @@ abstract class Fs extends FlysystemFs
     protected function createPath(string $path): SegmentedPathInterface
     {
         return HierarchicalPath::fromRelative(
-            $this->subpath ?? '',
+            App::parseEnv($this->subpath) ?? '',
             $path,
         )->withoutEmptySegments();
     }
