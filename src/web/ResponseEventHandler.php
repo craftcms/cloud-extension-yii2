@@ -16,7 +16,7 @@ use yii\web\ServerErrorHttpException;
 class ResponseEventHandler
 {
     private Response $response;
-    private const MAX_HEADER_LENGTH = 16 * 1024;
+    private const MAX_HEADER_LENGTH = 128 * 1024;
 
     public function __construct()
     {
@@ -139,7 +139,7 @@ class ResponseEventHandler
 
                 // @see https://developers.cloudflare.com/workers/platform/limits/#request-limits
                 if (StringHelper::byteLength($newResult) > self::MAX_HEADER_LENGTH) {
-                    Craft::error(
+                    Craft::warning(
                         sprintf("Header value exceeds the maximum length of %s bytes; truncating response.", self::MAX_HEADER_LENGTH),
                         __METHOD__,
                     );
