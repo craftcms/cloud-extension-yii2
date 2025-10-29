@@ -3,6 +3,7 @@
 namespace craft\cloud;
 
 use Craft;
+use craft\cache\DbCache;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\Helper as CloudHelper;
 use craft\cloud\queue\SqsQueue;
@@ -63,17 +64,29 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function () {
-            return Craft::createObject([
-                'class' => Cache::class,
-                'redis' => [
-                    'useSSL' => true,
-                    'hostname' => 'sterling-kingfish-15811.upstash.io',
-                    'username' => 'default',
-                    'password' => App::env('CRAFT_CLOUD_TESTING_REDIS_PASSWORD'),
-                    'port' => 6379,
-                    'database' => 0,
-                ],
-            ]);
+            $driver = App::env('CRAFT_CLOUD_CACHE_DRIVER');
+
+            if ($driver === 'redis') {
+                return Craft::createObject([
+                    'class' => Cache::class,
+                    'redis' => [
+                        'hostname' => App::env('CRAFT_CLOUD_CACHE_HOSTNAME'),
+                        'username' => 'default',
+                        'password' => App::env('CRAFT_CLOUD_CACHE_PASSWORD'),
+                        'port' => 6379,
+                        'database' => 0,
+                        'useSSL' => true,
+                    ],
+                ]);
+            }
+
+            $config = $this->tableExists(Table::CACHE) ? [
+                'class' => DbCache::class,
+                'cacheTable' => Table::CACHE,
+                'defaultDuration' => Craft::$app->getConfig()->getGeneral()->cacheDuration,
+            ] : App::cacheConfig();
+
+            return Craft::createObject($config);
         };
     }
 
