@@ -66,6 +66,7 @@ class AppConfig
             return Craft::createObject([
                 'class' => Cache::class,
                 'redis' => [
+                    'useSSL' => true,
                     'hostname' => 'sterling-kingfish-15811.upstash.io',
                     'username' => 'default',
                     'password' => App::env('CRAFT_CLOUD_TESTING_REDIS_PASSWORD'),
