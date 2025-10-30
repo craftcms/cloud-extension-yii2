@@ -79,15 +79,14 @@ abstract class Fs extends FlysystemFs
     }
 
     /**
+     * This should never be null, as the Cloud resizer can render asset transforms for the CP,
+     * even if `$hasUrls` is `false`.
+     *
      * @inheritdoc
      */
     public function getRootUrl(): ?string
     {
-        if (!$this->hasUrls) {
-            return null;
-        }
-
-        return $this->createUrl();
+        return $this->createUrl()->toString();
     }
 
     public function createUrl(string $path = ''): UriInterface
@@ -194,10 +193,6 @@ abstract class Fs extends FlysystemFs
      */
     protected function invalidateCdnPath(string $path): bool
     {
-        if (!$this->hasUrls) {
-            return true;
-        }
-
         try {
             $prefix = StaticCache::CDN_PREFIX . Module::getInstance()->getConfig()->environmentId . ':';
             $tag = StaticCacheTag::create($this->createBucketPath($path)->toString())
