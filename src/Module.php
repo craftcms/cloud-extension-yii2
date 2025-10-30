@@ -12,12 +12,11 @@ use craft\cloud\web\ResponseEventHandler;
 use craft\console\Application as ConsoleApplication;
 use craft\elements\Asset;
 use craft\events\DefineRulesEvent;
+use craft\events\GenerateTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\App;
 use craft\helpers\ConfigHelper;
-use craft\imagetransforms\FallbackTransformer;
-use craft\imagetransforms\ImageTransformer as CraftImageTransformer;
 use craft\log\MonologTarget;
 use craft\services\Fs as FsService;
 use craft\services\ImageTransforms;
@@ -67,18 +66,20 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         if ($this->getConfig()->useAssetCdn) {
             $app->getImages()->supportedImageFormats = ImageTransformer::SUPPORTED_IMAGE_FORMATS;
 
-            /**
-             * Currently this is the only reasonable way to change the default transformer
-             */
-            Craft::$container->set(
-                CraftImageTransformer::class,
-                ImageTransformer::class,
-            );
+            Event::on(
+                Asset::class,
+                Asset::EVENT_BEFORE_GENERATE_TRANSFORM,
+                function(GenerateTransformEvent $event) {
+                    if (!$event->transform || !$event->asset?->fs instanceof AssetsFs) {
+                        return;
+                    }
 
-            // TODO: this is to ensure PHP never transforms. Test this.
-            Craft::$container->set(
-                FallbackTransformer::class,
-                ImageTransformer::class,
+                    $event->url = (new ImageTransformer())->getTransformUrl(
+                        $event->asset,
+                        $event->transform,
+                        true,
+                    );
+                }
             );
 
             if ($app->getRequest()->getIsCpRequest()) {
