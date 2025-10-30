@@ -36,14 +36,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface
     {
         $this->asset = $asset;
         $fs = $asset->getVolume()->getTransformFs();
-
-        // @see self::getTransformIndexModelById
-        if (!($fs instanceof Fs)) {
-            $imageTransform->setTransformer($this->defaultTransformer::class);
-
-            return $this->defaultTransformer->getTransformUrl($asset, $imageTransform, $immediately);
-        }
-
         $assetUrl = Html::encodeSpaces(Assets::generateUrl($fs, $this->asset));
         $mimeType = $asset->getMimeType();
 
@@ -64,16 +56,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $query = http_build_query($params);
 
         return UrlHelper::url($assetUrl . ($query ? "?{$query}" : ''));
-    }
-
-    /**
-     * This is a workaround because `\craft\controllers\AssetsController::actionGenerateTransform`
-     * assumes the default transformer when a transform ID is passed. Since we are using DI, that
-     * always ends up here.
-     */
-    public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
-    {
-        return $this->defaultTransformer->getTransformIndexModelById($transformId);
     }
 
     public function invalidateAssetTransforms(Asset $asset): void
