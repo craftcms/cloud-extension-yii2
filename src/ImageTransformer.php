@@ -5,14 +5,11 @@ namespace craft\cloud;
 use Craft;
 use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\cloud\fs\Fs;
 use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use craft\imagetransforms\ImageTransformer as DefaultImageTransformer;
 use craft\models\ImageTransform;
-use craft\models\ImageTransformIndex;
 use Illuminate\Support\Collection;
 use yii\base\NotSupportedException;
 
@@ -24,26 +21,16 @@ class ImageTransformer extends Component implements ImageTransformerInterface
     public const SUPPORTED_IMAGE_FORMATS = ['jpg', 'jpeg', 'gif', 'png', 'avif', 'webp'];
     private const SIGNING_PARAM = 's';
     private Asset $asset;
-    private DefaultImageTransformer $defaultTransformer;
 
     public function init(): void
     {
         parent::init();
-        $this->defaultTransformer = (new (\craft\models\ImageTransform::DEFAULT_TRANSFORMER));
     }
 
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $this->asset = $asset;
         $fs = $asset->getVolume()->getTransformFs();
-
-        // @see self::getTransformIndexModelById
-        if (!($fs instanceof Fs)) {
-            $imageTransform->setTransformer($this->defaultTransformer::class);
-
-            return $this->defaultTransformer->getTransformUrl($asset, $imageTransform, $immediately);
-        }
-
         $assetUrl = Html::encodeSpaces(Assets::generateUrl($this->asset));
         $mimeType = $asset->getMimeType();
 
@@ -64,16 +51,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         $query = http_build_query($params);
 
         return UrlHelper::url($assetUrl . ($query ? "?{$query}" : ''));
-    }
-
-    /**
-     * This is a workaround because `\craft\controllers\AssetsController::actionGenerateTransform`
-     * assumes the default transformer when a transform ID is passed. Since we are using DI, that
-     * always ends up here.
-     */
-    public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
-    {
-        return $this->defaultTransformer->getTransformIndexModelById($transformId);
     }
 
     public function invalidateAssetTransforms(Asset $asset): void
