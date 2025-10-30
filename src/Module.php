@@ -69,7 +69,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             Event::on(
                 Asset::class,
                 Asset::EVENT_BEFORE_GENERATE_TRANSFORM,
-                function (GenerateTransformEvent $event) {
+                function(GenerateTransformEvent $event) {
                     if (!$event->transform || !$event->asset?->fs instanceof AssetsFs) {
                         return;
                     }
