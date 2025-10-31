@@ -16,7 +16,13 @@ use yii\web\ServerErrorHttpException;
 class ResponseEventHandler
 {
     private Response $response;
-    private const MAX_HEADER_LENGTH = 128 * 1024;
+
+    /**
+     * @see https://developers.cloudflare.com/workers/platform/limits/#request-limits
+     * @see https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html#http-headers-quotas
+     * @see https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html
+     */
+    private const MAX_HEADER_LENGTH = 16 * 1024;
 
     public function __construct()
     {
@@ -39,9 +45,6 @@ class ResponseEventHandler
         }
 
         $this->normalizeHeaders();
-
-        // TODO: check if "1 MB for the total combined size of request line and header values" is exceeded
-        // @see https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html
 
         if (Module::getInstance()->getConfig()->gzipResponse) {
             $this->gzipResponse();
@@ -137,7 +140,6 @@ class ResponseEventHandler
             ->reduce(function($result, $value) {
                 $newResult = $result === '' ? $value : $result . ',' . $value;
 
-                // @see https://developers.cloudflare.com/workers/platform/limits/#request-limits
                 if (StringHelper::byteLength($newResult) > self::MAX_HEADER_LENGTH) {
                     Craft::warning(
                         sprintf("Header value exceeds the maximum length of %s bytes; truncating response.", self::MAX_HEADER_LENGTH),
