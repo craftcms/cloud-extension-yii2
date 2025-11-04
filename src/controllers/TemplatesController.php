@@ -8,6 +8,8 @@
 namespace craft\cloud\controllers;
 
 use Craft;
+use craft\cloud\Module;
+use craft\helpers\UrlHelper;
 
 class TemplatesController extends \craft\controllers\TemplatesController
 {
@@ -21,12 +23,16 @@ class TemplatesController extends \craft\controllers\TemplatesController
     }
 
     /**
-     * TODO: verify signature: https://github.com/macgirvin/HTTP-Message-Signer
+     * TODO: verify signature with: https://github.com/macgirvin/HTTP-Message-Signer
      */
     private function verifySignature(): bool
     {
         $signature = Craft::$app->getRequest()->getQueryParam('signature');
+        $url = UrlHelper::removeParam(Craft::$app->getRequest()->getAbsoluteUrl(), 'signature');
 
-        return $signature === 'TODO';
+        return hash_equals(
+            hash_hmac('sha256', $url, Module::getInstance()->getConfig()->signingKey),
+            $signature,
+        );
     }
 }

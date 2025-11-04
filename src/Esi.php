@@ -40,7 +40,7 @@ class Esi
     private function signUrl(string $url): string
     {
         return UrlHelper::urlWithParams($url, [
-            'signature' => 'TODO'
+            'signature' => hash_hmac('sha256', $url, Module::getInstance()->getConfig()->signingKey),
         ]);
     }
 }
