@@ -12,7 +12,7 @@ class Esi
     public function __construct(
         private readonly string $template,
         private readonly array $variables = [],
-        private readonly bool $renderEsiTag = true,
+        private readonly bool $renderTemplate = false,
     ) {
     }
 
@@ -23,7 +23,7 @@ class Esi
 
     private function getHtml(): string
     {
-        if (!$this->renderEsiTag) {
+        if (!$this->renderTemplate) {
             return Craft::$app->getView()->renderTemplate($this->template, $this->variables);
         }
 

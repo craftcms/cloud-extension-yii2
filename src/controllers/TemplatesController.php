@@ -13,11 +13,11 @@ class TemplatesController extends \craft\controllers\TemplatesController
 {
     public function beforeAction($action): bool
     {
-        if ($this->verifySignature()) {
-            $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
+        if (!parent::beforeAction($action)) {
+            return false;
         }
 
-        return parent::beforeAction($action);
+        return $this->verifySignature();
     }
 
     /**

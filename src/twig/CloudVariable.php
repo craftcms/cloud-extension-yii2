@@ -34,7 +34,7 @@ class CloudVariable extends ServiceLocator
         return (new Esi(
             $template,
             $variables,
-            Helper::isCraftCloud(),
+            !Helper::isCraftCloud(),
         ))();
     }
 }
