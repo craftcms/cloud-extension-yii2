@@ -12,7 +12,7 @@ class Esi
     public function __construct(
         private readonly string $template,
         private readonly array $variables = [],
-        private readonly bool $useEsi = true,
+        private readonly bool $renderEsiTag = true,
     ) {
     }
 
@@ -23,7 +23,7 @@ class Esi
 
     private function getHtml(): string
     {
-        if ($this->useEsi) {
+        if (!$this->renderEsiTag) {
             return Craft::$app->getView()->renderTemplate($this->template, $this->variables);
         }
 
@@ -34,6 +34,13 @@ class Esi
             'variables' => $this->variables,
         ]);
 
-        return sprintf('<esi:include src="%s" />', $url);
+        return sprintf('<esi:include src="%s" />', $this->signUrl($url));
+    }
+
+    private function signUrl(string $url): string
+    {
+        return UrlHelper::urlWithParams($url, [
+            'signature' => 'TODO'
+        ]);
     }
 }
