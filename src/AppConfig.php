@@ -15,6 +15,7 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
+use yii\redis\Cache;
 use yii\web\DbSession;
 
 class AppConfig
@@ -63,6 +64,19 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
+            $driver = App::env('CRAFT_CLOUD_CACHE_DRIVER');
+
+            if ($driver === 'valkey-instance') {
+                return Craft::createObject([
+                    'class' => Cache::class,
+                    'redis' => [
+                        'hostname' => App::env('CRAFT_CLOUD_CACHE_HOSTNAME'),
+                        'port' => 6379,
+                        'database' => 0,
+                    ],
+                ]);
+            }
+
             $config = $this->tableExists(Table::CACHE) ? [
                 'class' => DbCache::class,
                 'cacheTable' => Table::CACHE,
