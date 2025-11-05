@@ -63,13 +63,23 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
-            $config = $this->tableExists(Table::CACHE) ? [
-                'class' => DbCache::class,
-                'cacheTable' => Table::CACHE,
-                'defaultDuration' => Craft::$app->getConfig()->getGeneral()->cacheDuration,
-            ] : App::cacheConfig();
+            if (Module::getInstance()->getConfig()->redisUrl) {
+                return Craft::createObject([
+                    'class' => Redis::class,
+                    'database' => 0,
+                    'defaultDuration' => Craft::$app->getConfig()->getGeneral()->cacheDuration,
+                ]);
+            }
 
-            return Craft::createObject($config);
+            if ($this->tableExists(Table::CACHE)) {
+                return Craft::createObject([
+                    'class' => DbCache::class,
+                    'cacheTable' => Table::CACHE,
+                    'defaultDuration' => Craft::$app->getConfig()->getGeneral()->cacheDuration,
+                ]);
+            }
+
+            return Craft::createObject(App::cacheConfig());
         };
     }
 
