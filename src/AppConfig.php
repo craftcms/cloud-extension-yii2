@@ -15,6 +15,7 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
+use yii\redis\Cache;
 use yii\web\DbSession;
 
 class AppConfig
@@ -63,13 +64,30 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
-            $config = $this->tableExists(Table::CACHE) ? [
-                'class' => DbCache::class,
-                'cacheTable' => Table::CACHE,
-                'defaultDuration' => Craft::$app->getConfig()->getGeneral()->cacheDuration,
-            ] : App::cacheConfig();
+            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
+            $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
-            return Craft::createObject($config);
+            if ($redisUrl) {
+                return Craft::createObject([
+                    'class' => Cache::class,
+                    'defaultDuration' => $defaultDuration,
+                    'redis' => [
+                        'class' => Redis::class,
+                        'url' => $redisUrl,
+                        'database' => 0,
+                    ],
+                ]);
+            }
+
+            if ($this->tableExists(Table::CACHE)) {
+                return Craft::createObject([
+                    'class' => DbCache::class,
+                    'cacheTable' => Table::CACHE,
+                    'defaultDuration' => $defaultDuration,
+                ]);
+            }
+
+            return Craft::createObject(App::cacheConfig());
         };
     }
 
