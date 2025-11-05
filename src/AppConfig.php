@@ -70,11 +70,11 @@ class AppConfig
             if ($redisUrl) {
                 return Craft::createObject([
                     'class' => Cache::class,
+                    'defaultDuration' => $defaultDuration,
                     'redis' => [
                         'class' => Redis::class,
                         'url' => $redisUrl,
                         'database' => 0,
-                        'defaultDuration' => $defaultDuration,
                     ]
                 ]);
             }
