@@ -10,37 +10,43 @@ use Twig\Markup;
 class Esi
 {
     public function __construct(
-        private readonly string $template,
-        private readonly array $variables = [],
-        private readonly bool $renderTemplate = false,
+        private readonly UrlSigner $urlSigner,
+        private readonly bool $useEsi = true,
     ) {
     }
 
-    public function __invoke(): Markup
+    /**
+     * Prepare response for ESI processing by setting the Surrogate-Control header
+     * Note: The Surrogate-Control header will cause Cloudflare to ignore
+     * the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
+     */
+    public function prepareResponse(): void
     {
-        return Template::raw($this->getHtml());
+        Craft::$app->getResponse()->getHeaders()->setDefault(
+            HeaderEnum::SURROGATE_CONTROL->value,
+            'content="ESI/1.0"',
+        );
     }
 
-    private function getHtml(): string
+    public function render(string $template, array $variables = []): Markup
     {
-        if (!$this->renderTemplate) {
-            return Craft::$app->getView()->renderTemplate($this->template, $this->variables);
+        if (!$this->useEsi) {
+            return Template::raw(
+                Craft::$app->getView()->renderTemplate($template, $variables)
+            );
         }
 
-        Helper::enableEsi();
+        $this->prepareResponse();
 
         $url = UrlHelper::actionUrl('cloud/templates/render', [
-            'template' => $this->template,
-            'variables' => $this->variables,
+            'template' => $template,
+            'variables' => $variables,
         ]);
 
-        return sprintf('<esi:include src="%s" />', $this->signUrl($url));
-    }
+        $signedUrl = $this->urlSigner->sign($url);
 
-    private function signUrl(string $url): string
-    {
-        return UrlHelper::urlWithParams($url, [
-            'signature' => hash_hmac('sha256', $url, Module::getInstance()->getConfig()->signingKey),
-        ]);
+        return Template::raw(
+            sprintf('<esi:include src="%s" />', $signedUrl)
+        );
     }
 }
