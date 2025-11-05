@@ -14,15 +14,6 @@ class Redis extends Connection
 {
     protected ?string $url = null;
 
-    public function __construct($config = [])
-    {
-        $config = $config + [
-            'url' => Module::getInstance()->getConfig()->redisUrl,
-        ];
-
-        parent::__construct($config);
-    }
-
     public function setUrl(string $value): static
     {
         $this->url = $value;
