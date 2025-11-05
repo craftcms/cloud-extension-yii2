@@ -15,6 +15,7 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
+use yii\redis\Cache;
 use yii\web\DbSession;
 
 class AppConfig
@@ -68,10 +69,13 @@ class AppConfig
 
             if (Module::getInstance()->getConfig()->redisUrl) {
                 return Craft::createObject([
-                    'class' => Redis::class,
-                    'url' => $redisUrl,
-                    'database' => 0,
-                    'defaultDuration' => $defaultDuration,
+                    'class' => Cache::class,
+                    'redis' => [
+                        'class' => Redis::class,
+                        'url' => $redisUrl,
+                        'database' => 0,
+                        'defaultDuration' => $defaultDuration,
+                    ]
                 ]);
             }
 
