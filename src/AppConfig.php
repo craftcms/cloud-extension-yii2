@@ -75,7 +75,7 @@ class AppConfig
                         'class' => Redis::class,
                         'url' => $redisUrl,
                         'database' => 0,
-                    ]
+                    ],
                 ]);
             }
 
