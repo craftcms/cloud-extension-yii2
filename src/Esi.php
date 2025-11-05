@@ -5,6 +5,7 @@ namespace craft\cloud;
 use Craft;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use InvalidArgumentException;
 use Twig\Markup;
 
 class Esi
@@ -30,6 +31,8 @@ class Esi
 
     public function render(string $template, array $variables = []): Markup
     {
+        $this->validateVariables($variables);
+
         if (!$this->useEsi) {
             return Template::raw(
                 Craft::$app->getView()->renderTemplate($template, $variables)
@@ -48,5 +51,20 @@ class Esi
         return Template::raw(
             sprintf('<esi:include src="%s" />', $signedUrl)
         );
+    }
+
+    private function validateVariables(array $variables): void
+    {
+        foreach ($variables as $value) {
+            if (is_array($value)) {
+                $this->validateVariables($value);
+            } elseif (!is_scalar($value) && !is_null($value)) {
+                $type = get_debug_type($value);
+
+                throw new InvalidArgumentException(
+                    "Value must be a primitive value or array, {$type} given."
+                );
+            }
+        }
     }
 }
