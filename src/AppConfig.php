@@ -64,10 +64,10 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
-            $redisUrl = Module::getInstance()->getConfig()->redisUrl;
+            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
             $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
-            if (Module::getInstance()->getConfig()->redisUrl) {
+            if ($redisUrl) {
                 return Craft::createObject([
                     'class' => Cache::class,
                     'redis' => [
