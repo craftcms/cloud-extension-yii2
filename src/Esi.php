@@ -50,10 +50,7 @@ class Esi
 
         $html = sprintf('<esi:include src="%s" />', $signedUrl);
 
-        // TODO only for html
-        if (Module::getInstance()->getConfig()->getDevMode()) {
-            $html .= "<!-- $html -->";
-        }
+        Craft::info(['Rendering ESI', $html], __METHOD__);
 
         return Template::raw($html);
     }
