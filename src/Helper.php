@@ -56,19 +56,6 @@ class Helper
         );
     }
 
-    /**
-     * Enable ESI processing
-     * Note: The Surrogate-Control header will cause Cloudflare to ignore
-     * the Cache-Control header: https://developers.cloudflare.com/cache/concepts/cdn-cache-control/#header-precedence
-     */
-    public static function enableEsi(): void
-    {
-        Craft::$app->getResponse()->getHeaders()->setDefault(
-            HeaderEnum::SURROGATE_CONTROL->value,
-            'content="ESI/1.0"',
-        );
-    }
-
     private static function createSigningContext(iterable $headers = []): Context
     {
         $headers = Collection::make($headers);
