@@ -1,6 +1,6 @@
 actor: UnitTester
 modules:
-    enabled:
-        - Asserts
-        - \Helper\Unit
-        - \craft\test\Craft
+  enabled:
+    - Asserts
+    - \Helper\Unit
+    - \craft\test\Craft

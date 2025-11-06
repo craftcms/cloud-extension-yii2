@@ -1,5 +1,5 @@
 actor: AcceptanceTester
 modules:
-    enabled:
-        - \Helper\Acceptance
-        - \craft\test\Craft
+  enabled:
+    - \Helper\Acceptance
+    - \craft\test\Craft
