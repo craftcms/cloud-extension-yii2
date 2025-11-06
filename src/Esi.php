@@ -48,9 +48,14 @@ class Esi
 
         $signedUrl = $this->urlSigner->sign($url);
 
-        return Template::raw(
-            sprintf('<esi:include src="%s" />', $signedUrl)
-        );
+        $html = sprintf('<esi:include src="%s" />', $signedUrl);
+
+        // TODO only for html
+        if (Module::getInstance()->getConfig()->getDevMode()) {
+            $html .= "<!-- $html -->";
+        }
+
+        return Template::raw($html);
     }
 
     private function validateVariables(array $variables): void
