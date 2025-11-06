@@ -41,16 +41,18 @@ class Esi
 
         $this->prepareResponse();
 
-        $url = UrlHelper::actionUrl('cloud/templates/render', [
+        $url = UrlHelper::actionUrl('cloud/esi/render-template', [
             'template' => $template,
             'variables' => $variables,
         ]);
 
         $signedUrl = $this->urlSigner->sign($url);
 
-        return Template::raw(
-            sprintf('<esi:include src="%s" />', $signedUrl)
-        );
+        $html = sprintf('<esi:include src="%s" />', $signedUrl);
+
+        Craft::info(['Rendering ESI', $html], __METHOD__);
+
+        return Template::raw($html);
     }
 
     private function validateVariables(array $variables): void
