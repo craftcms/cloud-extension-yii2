@@ -41,7 +41,7 @@ class Esi
 
         $this->prepareResponse();
 
-        $url = UrlHelper::actionUrl('cloud/templates/render', [
+        $url = UrlHelper::actionUrl('cloud/esi/render-template', [
             'template' => $template,
             'variables' => $variables,
         ]);
