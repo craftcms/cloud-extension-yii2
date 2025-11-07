@@ -2,6 +2,7 @@
 
 namespace craft\cloud;
 
+use Craft;
 use craft\helpers\UrlHelper;
 
 class UrlSigner
@@ -24,6 +25,8 @@ class UrlSigner
         $query = parse_url($url, PHP_URL_QUERY);
 
         if (!$query) {
+            Craft::info('Missing signature', __METHOD__);
+
             return false;
         }
 
@@ -32,14 +35,28 @@ class UrlSigner
         $providedSignature = $params[$this->signatureParameter] ?? null;
 
         if (!$providedSignature) {
+            Craft::info('Missing signature', __METHOD__);
+
             return false;
         }
 
         $urlWithoutSignature = UrlHelper::removeParam($url, $this->signatureParameter);
 
-        return hash_equals(
+        $verified = hash_equals(
             hash_hmac('sha256', $urlWithoutSignature, $this->signingKey),
             $providedSignature,
         );
+
+        if (!$verified) {
+            Craft::info([
+                'message' => 'Invalid signature',
+                'signatureParameter' => $this->signatureParameter,
+                'providedSignature' => $providedSignature,
+                'urlWithoutSignature' => $urlWithoutSignature,
+                'url' => $url,
+            ], __METHOD__);
+        }
+
+        return $verified;
     }
 }
