@@ -3,9 +3,8 @@
 namespace craft\cloud\queue;
 
 use Craft;
-use craft\queue\ReleasableQueueInterface;
 
-class SqsQueue extends SqsQueueLegacy implements ReleasableQueueInterface
+class SqsQueueLegacy extends \yii\queue\sqs\Queue
 {
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
