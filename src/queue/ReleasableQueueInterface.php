@@ -9,7 +9,7 @@ if (interface_exists(CraftReleasableQueueInterface::class)) {
     {
     }
 } else {
-    interface CraftReleasableQueueInterface
+    interface ReleasableQueueInterface
     {
     }
 }
