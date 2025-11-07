@@ -7,7 +7,6 @@ use craft\cache\DbCache;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\Helper as CloudHelper;
 use craft\cloud\queue\SqsQueue;
-use craft\cloud\queue\SqsQueueLegacy;
 use craft\cloud\runtime\event\CliHandler;
 use craft\cloud\web\AssetManager;
 use craft\db\Table;
@@ -16,7 +15,6 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
-use craft\queue\ReleasableQueueInterface;
 use yii\redis\Cache;
 use yii\web\DbSession;
 
@@ -100,7 +98,7 @@ class AppConfig
                 'class' => CraftQueue::class,
                 'ttr' => CliHandler::MAX_EXECUTION_SECONDS,
                 'proxyQueue' => Module::getInstance()->getConfig()->useQueue ? [
-                    'class' => interface_exists(ReleasableQueueInterface::class) ? SqsQueue::class : SqsQueueLegacy::class,
+                    'class' => SqsQueue::class,
                     'ttr' => CliHandler::MAX_EXECUTION_SECONDS,
                     'url' => Module::getInstance()->getConfig()->sqsUrl,
                     'region' => Module::getInstance()->getConfig()->getRegion(),
