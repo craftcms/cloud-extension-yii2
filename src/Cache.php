@@ -29,7 +29,7 @@ class Cache extends \yii\redis\Cache
             return $serialized;
         }
 
-        $compressed = gzencode($serialized, 9);
+        $compressed = gzencode($serialized, $this->gzipLevel);
 
         return self::GZIP_PREFIX . $compressed;
     }
