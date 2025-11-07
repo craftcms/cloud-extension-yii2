@@ -49,7 +49,9 @@ class Esi
 
         $signedUrl = $this->urlSigner->sign($url);
 
-        $html = sprintf('<esi:include src="%s" />', Html::encode($signedUrl));
+        $html = Html::encodeParams('<esi:include src="{src}" />', [
+            'src' => $signedUrl,
+        ]);
 
         Craft::info(['Rendering ESI', $html], __METHOD__);
 
