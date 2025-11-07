@@ -3,6 +3,7 @@
 namespace craft\cloud;
 
 use Craft;
+use craft\helpers\Html;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use InvalidArgumentException;
@@ -48,7 +49,7 @@ class Esi
 
         $signedUrl = $this->urlSigner->sign($url);
 
-        $html = sprintf('<esi:include src="%s" />', $signedUrl);
+        $html = sprintf('<esi:include src="%s" />', Html::encode($signedUrl));
 
         Craft::info(['Rendering ESI', $html], __METHOD__);
 
