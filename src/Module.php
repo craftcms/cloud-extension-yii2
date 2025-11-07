@@ -62,7 +62,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
         $this->setComponents([
             'staticCache' => StaticCache::class,
             'urlSigner' => fn() => new UrlSigner(
-                signingKey: $this->getConfig()->signingKey,
+                signingKey: $this->getConfig()->signingKey ?? '',
             ),
             'esi' => fn() => new Esi(
                 urlSigner: $this->getUrlSigner(),
