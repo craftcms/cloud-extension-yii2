@@ -230,7 +230,7 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
     private function getMaxExecutionSeconds(): int
     {
-        if (Craft::$app->getRequest()->getIsWebRequest()) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             return 60;
         }
 

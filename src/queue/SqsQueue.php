@@ -3,7 +3,6 @@
 namespace craft\cloud\queue;
 
 use Craft;
-use craft\queue\ReleasableQueueInterface;
 
 class SqsQueue extends SqsQueueLegacy implements ReleasableQueueInterface
 {
