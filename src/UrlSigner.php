@@ -3,7 +3,7 @@
 namespace craft\cloud;
 
 use Craft;
-use craft\helpers\UrlHelper;
+use League\Uri\Components\Query;
 use League\Uri\Modifier;
 
 class UrlSigner
@@ -16,40 +16,30 @@ class UrlSigner
 
     public function sign(string $url): string
     {
-        $normalizedUrl = $this->normalizeUrl($url);
+        $normalizedUrl = $this->prepareUrlForSigning($url);
 
         Craft::info([
             'message' => 'Signing URL',
-            'url' => $url,
-            'normalizedUrl' => $normalizedUrl,
+            'url' => $normalizedUrl,
         ], __METHOD__);
 
-        return UrlHelper::urlWithParams($url, [
-            $this->signatureParameter => hash_hmac(
-                'sha256',
-                $normalizedUrl,
-                $this->signingKey,
-            ),
+        $signature = hash_hmac('sha256', $normalizedUrl, $this->signingKey);
+
+        return Modifier::from($normalizedUrl)->appendQueryParameters([
+            $this->signatureParameter => $signature,
         ]);
     }
-    private function normalizeUrl(string $url): string
+
+    private function prepareUrlForSigning(string $url): string
     {
-        return Modifier::from($url)->sortQuery();
+        return Modifier::from($url)
+            ->removeQueryParameters($this->signatureParameter)
+            ->sortQuery();
     }
 
     public function verify(string $url): bool
     {
-        $query = parse_url($url, PHP_URL_QUERY);
-
-        if (!$query) {
-            Craft::info('Missing signature', __METHOD__);
-
-            return false;
-        }
-
-        parse_str($query, $params);
-
-        $providedSignature = $params[$this->signatureParameter] ?? null;
+        $providedSignature = Query::fromUri($url)->get($this->signatureParameter);
 
         if (!$providedSignature) {
             Craft::info('Missing signature', __METHOD__);
@@ -57,8 +47,7 @@ class UrlSigner
             return false;
         }
 
-        $urlWithoutSignature = UrlHelper::removeParam($url, $this->signatureParameter);
-        $normalizedUrl = $this->normalizeUrl($urlWithoutSignature);
+        $normalizedUrl = $this->prepareUrlForSigning($url);
 
         $verified = hash_equals(
             hash_hmac('sha256', $normalizedUrl, $this->signingKey),
@@ -70,8 +59,7 @@ class UrlSigner
                 'message' => 'Invalid signature',
                 'signatureParameter' => $this->signatureParameter,
                 'providedSignature' => $providedSignature,
-                'urlWithoutSignature' => $urlWithoutSignature,
-                'url' => $url,
+                'url' => $normalizedUrl,
             ], __METHOD__);
         }
 
