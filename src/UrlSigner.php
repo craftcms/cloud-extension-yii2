@@ -16,25 +16,23 @@ class UrlSigner
 
     public function sign(string $url): string
     {
-        $normalizedUrl = $this->prepareUrlForSigning($url);
+        $data = $this->getSigningData($url);
+        $signature = hash_hmac('sha256', $data, $this->signingKey);
 
-        Craft::info([
-            'message' => 'Signing URL',
-            'url' => $normalizedUrl,
-        ], __METHOD__);
-
-        $signature = hash_hmac('sha256', $normalizedUrl, $this->signingKey);
-
-        return Modifier::from($normalizedUrl)->appendQueryParameters([
+        return Modifier::from($url)->appendQueryParameters([
             $this->signatureParameter => $signature,
         ]);
     }
 
-    private function prepareUrlForSigning(string $url): string
+    private function getSigningData(string $url): string
     {
         return Modifier::from($url)
             ->removeQueryParameters($this->signatureParameter)
-            ->sortQuery();
+            ->sortQuery()
+
+            // TODO: validate entire URL
+            ->getUri()
+            ->getPath();
     }
 
     public function verify(string $url): bool
@@ -51,19 +49,19 @@ class UrlSigner
             return false;
         }
 
-        $normalizedUrl = $this->prepareUrlForSigning($url);
+        $data = $this->getSigningData($url);
 
         $verified = hash_equals(
-            hash_hmac('sha256', $normalizedUrl, $this->signingKey),
+            hash_hmac('sha256', $data, $this->signingKey),
             $providedSignature,
         );
 
         if (!$verified) {
             Craft::info([
                 'message' => 'Invalid signature',
-                'signatureParameter' => $this->signatureParameter,
                 'providedSignature' => $providedSignature,
-                'url' => $normalizedUrl,
+                'data' => $data,
+                'url' => $url,
             ], __METHOD__);
         }
 
