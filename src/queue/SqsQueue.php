@@ -3,12 +3,12 @@
 namespace craft\cloud\queue;
 
 use Craft;
-use craft\queue\ReleasableQueueInterface;
 
 class SqsQueue extends \yii\queue\sqs\Queue implements ReleasableQueueInterface
 {
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
+
         /**
          * Delay pushing to SQS until after request is processed.
          *
