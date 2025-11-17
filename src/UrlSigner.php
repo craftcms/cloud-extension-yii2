@@ -42,7 +42,11 @@ class UrlSigner
         $providedSignature = Query::fromUri($url)->get($this->signatureParameter);
 
         if (!$providedSignature) {
-            Craft::info('Missing signature', __METHOD__);
+            Craft::info([
+                'message' => 'Missing signature',
+                'url' => $url,
+                'signatureParameter' => $this->signatureParameter,
+            ], __METHOD__);
 
             return false;
         }
