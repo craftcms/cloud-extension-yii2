@@ -12,9 +12,6 @@ class EsiController extends \craft\web\Controller
 
     public function beforeAction($action): bool
     {
-        // TODO: enable verification
-        return true;
-
         if (!parent::beforeAction($action)) {
             return false;
         }
