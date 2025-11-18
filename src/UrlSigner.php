@@ -28,11 +28,7 @@ class UrlSigner
     {
         return Modifier::from($url)
             ->removeQueryParameters($this->signatureParameter)
-            ->sortQuery()
-
-            // TODO: validate entire URL
-            ->getUri()
-            ->getPath();
+            ->sortQuery();
     }
 
     public function verify(string $url): bool
