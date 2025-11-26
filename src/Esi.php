@@ -3,11 +3,8 @@
 namespace craft\cloud;
 
 use Craft;
-use craft\helpers\Html;
-use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use InvalidArgumentException;
-use Twig\Markup;
 
 class Esi
 {
@@ -30,14 +27,12 @@ class Esi
         );
     }
 
-    public function render(string $template, array $variables = []): Markup
+    public function render(string $template, array $variables = []): string
     {
         $this->validateVariables($variables);
 
         if (!$this->useEsi) {
-            return Template::raw(
-                Craft::$app->getView()->renderTemplate($template, $variables)
-            );
+            return Craft::$app->getView()->renderTemplate($template, $variables);
         }
 
         $this->prepareResponse();
@@ -49,13 +44,12 @@ class Esi
 
         $signedUrl = $this->urlSigner->sign($url);
 
-        $html = Html::encodeParams('<esi:include src="{src}" />', [
-            'src' => $signedUrl,
-        ]);
-
-        Craft::info(['Rendering ESI', $html], __METHOD__);
-
-        return Template::raw($html);
+        return Craft::$app->getView()->renderString(
+            '<esi:include src="{{ src }}" />',
+            [
+                'src' => $signedUrl,
+            ]
+        );
     }
 
     private function validateVariables(array $variables): void

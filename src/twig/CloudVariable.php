@@ -9,6 +9,7 @@ namespace craft\cloud\twig;
 
 use craft\cloud\Helper;
 use craft\cloud\Module;
+use craft\helpers\Template;
 use Twig\Markup;
 use yii\di\ServiceLocator;
 
@@ -31,6 +32,8 @@ class CloudVariable extends ServiceLocator
 
     public function esi(string $template, $variables = []): Markup
     {
-        return Module::getInstance()->getEsi()->render($template, $variables);
+        return Template::raw(
+            Module::getInstance()->getEsi()->render($template, $variables)
+        );
     }
 }
