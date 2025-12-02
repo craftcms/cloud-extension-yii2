@@ -25,6 +25,7 @@ use craft\web\View;
 use Illuminate\Support\Collection;
 use Psr\Log\LogLevel;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * @property ?string $id When auto-bootstrapped as an extension, this can be `null`.
@@ -74,11 +75,15 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
                         return;
                     }
 
-                    $event->url = (new ImageTransformer())->getTransformUrl(
-                        $event->asset,
-                        $event->transform,
-                        true,
-                    );
+                    try {
+                        $event->url = (new ImageTransformer())->getTransformUrl(
+                            $event->asset,
+                            $event->transform,
+                            true,
+                        );
+                    } catch (NotSupportedException) {
+                        Craft::info("Transforms not supported for {$event->asset->getPath()}", __METHOD__);
+                    }
                 }
             );
 
