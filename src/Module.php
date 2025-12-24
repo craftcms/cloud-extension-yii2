@@ -60,6 +60,17 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
 
         Craft::setAlias('@artifactBaseUrl', Helper::artifactUrl());
 
+        $this->setComponents([
+            'staticCache' => StaticCache::class,
+            'urlSigner' => fn() => new UrlSigner(
+                signingKey: $this->getConfig()->signingKey ?? '',
+            ),
+            'esi' => fn() => new Esi(
+                urlSigner: $this->getUrlSigner(),
+                useEsi: Helper::isCraftCloud(),
+            ),
+        ]);
+
         if (Helper::isCraftCloud()) {
             $this->bootstrapCloud($app);
         }
@@ -123,10 +134,6 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
             ini_get('memory_limit'),
             $app->getErrorHandler()->memoryReserveSize,
         );
-
-        $this->setComponents([
-            'staticCache' => StaticCache::class,
-        ]);
 
         $this->registerCloudEventHandlers();
 
@@ -202,6 +209,16 @@ class Module extends \yii\base\Module implements \yii\base\BootstrapInterface
     public function getStaticCache(): StaticCache
     {
         return $this->get('staticCache');
+    }
+
+    public function getUrlSigner(): UrlSigner
+    {
+        return $this->get('urlSigner');
+    }
+
+    public function getEsi(): Esi
+    {
+        return $this->get('esi');
     }
 
     private function removeAttributeFromRule(array $rule, string $attributeToRemove): array
