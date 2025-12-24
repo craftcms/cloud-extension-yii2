@@ -137,7 +137,7 @@ class SetupController extends Controller
             $config['node-version'] = $this->prompt('Node version:', [
                 'required' => false,
                 'default' => "$defaultNodeVersion->major.$defaultNodeVersion->minor",
-                'validator' => function(string $input, string &$error = null) {
+                'validator' => function(string $input, ?string &$error = null) {
                     if (!preg_match('/^[0-9]+\.[0-9]+$/', $input)) {
                         $error = $this->markdownToAnsi('Node version must be specified as `major.minor`.');
                         return false;
