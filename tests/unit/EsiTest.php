@@ -8,7 +8,6 @@ use craft\cloud\UrlSigner;
 use craft\web\twig\TemplateLoaderException;
 use InvalidArgumentException;
 
-
 /**
  * Unit tests for ESI functionality that don't require Craft to be initialized.
  * These tests focus on variable validation and basic ESI behavior.
