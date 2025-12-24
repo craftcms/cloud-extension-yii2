@@ -7,9 +7,10 @@ use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\elements\Asset;
 use craft\helpers\Assets;
+use craft\helpers\Html;
+use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
 use Illuminate\Support\Collection;
-use League\Uri\Modifier;
 use yii\base\NotSupportedException;
 
 /**
@@ -18,6 +19,7 @@ use yii\base\NotSupportedException;
 class ImageTransformer extends Component implements ImageTransformerInterface
 {
     public const SUPPORTED_IMAGE_FORMATS = ['jpg', 'jpeg', 'gif', 'png', 'avif', 'webp'];
+    private const SIGNING_PARAM = 's';
     private Asset $asset;
 
     public function init(): void
@@ -29,7 +31,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface
     {
         $this->asset = $asset;
         $fs = $asset->getVolume()->getTransformFs();
-        $assetUrl = Assets::generateUrl($fs, $this->asset);
+        $assetUrl = Html::encodeSpaces(Assets::generateUrl($fs, $this->asset));
         $mimeType = $asset->getMimeType();
 
         if ($mimeType === 'image/gif' && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
@@ -41,9 +43,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface
         }
 
         $transformParams = $this->buildTransformParams($imageTransform);
-        $url = (string) Modifier::from($assetUrl)->appendQueryParameters($transformParams);
+        $path = parse_url($assetUrl, PHP_URL_PATH);
+        $params = $transformParams + [
+                self::SIGNING_PARAM => $this->sign($path, $transformParams),
+            ];
 
-        return Module::getInstance()->getUrlSigner()->sign($url);
+        $query = http_build_query($params);
+
+        return UrlHelper::url($assetUrl . ($query ? "?{$query}" : ''));
     }
 
     public function invalidateAssetTransforms(Asset $asset): void
@@ -128,5 +135,30 @@ class ImageTransformer extends Component implements ImageTransformerInterface
             'jpg' => 'jpeg',
             default => $imageTransform->format,
         };
+    }
+
+    private function sign(string $path, $params): string
+    {
+        $paramString = http_build_query($params);
+        $data = "$path#?$paramString";
+
+        Craft::info("Signing transform: `{$data}`", __METHOD__);
+
+        // https://developers.cloudflare.com/workers/examples/signing-requests
+        $hash = hash_hmac(
+            'sha256',
+            $data,
+            Module::getInstance()->getConfig()->signingKey,
+            true,
+        );
+
+        return $this->base64UrlEncode($hash);
+    }
+
+    private function base64UrlEncode(string $data): string
+    {
+        $base64Url = strtr(base64_encode($data), '+/', '-_');
+
+        return rtrim($base64Url, '=');
     }
 }
