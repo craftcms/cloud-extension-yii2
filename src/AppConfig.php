@@ -64,8 +64,28 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
-            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
             $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
+
+            $redisSrv = App::env('CRAFT_CLOUD_REDIS_SRV');
+
+            // Temporary for testing it out
+            if ($redisSrv) {
+                $record = dns_get_record($redisSrv, DNS_SRV);
+
+                $url = 'redis://' . $record[0]['target'] . ':' . $record[0]['port'];
+
+                return Craft::createObject([
+                    'class' => Cache::class,
+                    'defaultDuration' => $defaultDuration,
+                    'redis' => [
+                        'class' => Redis::class,
+                        'url' => $url,
+                        'database' => 0,
+                    ],
+                ]);
+            }
+
+            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
 
             if ($redisUrl) {
                 return Craft::createObject([
