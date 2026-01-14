@@ -64,16 +64,17 @@ class AppConfig
     private function getCache(): \Closure
     {
         return function() {
-            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
             $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
-            if ($redisUrl) {
+            $valkey = $this->resolveValkeyEndpoint();
+
+            if ($valkey) {
                 return Craft::createObject([
                     'class' => Cache::class,
                     'defaultDuration' => $defaultDuration,
                     'redis' => [
                         'class' => Redis::class,
-                        'url' => $redisUrl,
+                        'url' => $valkey,
                         'database' => 0,
                     ],
                 ]);
@@ -89,6 +90,23 @@ class AppConfig
 
             return Craft::createObject(App::cacheConfig());
         };
+    }
+
+    private function resolveValkeyEndpoint(): string
+    {
+        $srv = App::env('CRAFT_CLOUD_CACHE_SRV');
+
+        if ($srv) {
+            $record = dns_get_record($srv, DNS_SRV);
+
+            if (! empty($record)) {
+                return 'redis://' . $record[0]['target'] . ':' . $record[0]['port'];
+            }
+        }
+
+        // Deprecated. We are moving to CRAFT_CLOUD_CACHE_SRV for both Fargate and ECS.
+        // Once every website is moved over, we can disregared this fallback.
+        return App::env('CRAFT_CLOUD_REDIS_URL');
     }
 
     private function getQueue(): \Closure
