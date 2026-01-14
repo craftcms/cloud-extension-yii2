@@ -2,6 +2,7 @@
 
 namespace craft\cloud;
 
+use Closure;
 use Craft;
 use craft\cache\DbCache;
 use craft\cloud\fs\TmpFs;
@@ -47,7 +48,7 @@ class AppConfig
         return $config;
     }
 
-    private function getSession(): \Closure
+    private function getSession(): Closure
     {
         return function() {
             $config = App::sessionConfig();
@@ -61,39 +62,20 @@ class AppConfig
         };
     }
 
-    private function getCache(): \Closure
+    private function getCache(): Closure
     {
         return function() {
             $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
-            $redisSrv = App::env('CRAFT_CLOUD_REDIS_SRV');
+            $valkey = $this->resolveValkeyEndpoint();
 
-            // Temporary for testing it out
-            if ($redisSrv) {
-                $record = dns_get_record($redisSrv, DNS_SRV);
-
-                $url = 'redis://' . $record[0]['target'] . ':' . $record[0]['port'];
-
+            if ($valkey) {
                 return Craft::createObject([
                     'class' => Cache::class,
                     'defaultDuration' => $defaultDuration,
                     'redis' => [
                         'class' => Redis::class,
-                        'url' => $url,
-                        'database' => 0,
-                    ],
-                ]);
-            }
-
-            $redisUrl = App::env('CRAFT_CLOUD_REDIS_URL');
-
-            if ($redisUrl) {
-                return Craft::createObject([
-                    'class' => Cache::class,
-                    'defaultDuration' => $defaultDuration,
-                    'redis' => [
-                        'class' => Redis::class,
-                        'url' => $redisUrl,
+                        'url' => $valkey,
                         'database' => 0,
                     ],
                 ]);
@@ -111,7 +93,24 @@ class AppConfig
         };
     }
 
-    private function getQueue(): \Closure
+    private function resolveValkeyEndpoint(): string
+    {
+        $srv = App::env('CRAFT_CLOUD_CACHE_SRV');
+
+        if ($srv) {
+            $record = dns_get_record($srv, DNS_SRV);
+
+            if (! empty($record)) {
+                return 'redis://' . $record[0]['target'] . ':' . $record[0]['port'];
+            }
+        }
+
+        // Deprecated. We are moving to CRAFT_CLOUD_CACHE_SRV for both Fargate and ECS.
+        // Once every website is moved over, we can disregared this fallback.
+        return App::env('CRAFT_CLOUD_REDIS_URL');
+    }
+
+    private function getQueue(): Closure
     {
         return function() {
             return Craft::createObject([
@@ -127,7 +126,7 @@ class AppConfig
         };
     }
 
-    private function getAssetManager(): \Closure
+    private function getAssetManager(): Closure
     {
         return function() {
             $config = [
