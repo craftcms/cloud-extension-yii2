@@ -92,7 +92,7 @@ class AppConfig
         };
     }
 
-    private function resolveValkeyEndpoint(): string
+    private function resolveValkeyEndpoint(): ?string
     {
         $srv = App::env('CRAFT_CLOUD_CACHE_SRV');
 
