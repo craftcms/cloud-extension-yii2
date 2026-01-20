@@ -4,6 +4,7 @@ namespace craft\cloud;
 
 use Craft;
 use craft\cache\DbCache;
+use craft\cloud\db\Command;
 use craft\cloud\fs\TmpFs;
 use craft\cloud\Helper as CloudHelper;
 use craft\cloud\queue\SqsQueue;
@@ -39,12 +40,28 @@ class AppConfig
             $config['components']['session'] = $this->getSession();
         }
 
+        $config['components']['db'] = $this->getDb();
+        $config['components']['db2'] = $this->getDb();
         $config['components']['cache'] = $this->getCache();
         $config['components']['queue'] = $this->getQueue();
         $config['components']['assetManager'] = $this->getAssetManager();
         $config['container']['definitions'] = $this->getDefinitions();
 
         return $config;
+    }
+
+    private function getDb(): \Closure
+    {
+        return function() {
+            $config = [
+                'commandMap' => [
+                    'pgsql' => Command::class,
+                    'mysql' => Command::class,
+                ],
+            ] + App::dbConfig();
+
+            return Craft::createObject($config);
+        };
     }
 
     private function getSession(): \Closure

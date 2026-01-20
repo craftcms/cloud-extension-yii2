@@ -274,6 +274,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging tags', [
             'tags' => $tags,
+            'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
         ]), __METHOD__);
 
         if ($isWebResponse) {
@@ -302,6 +303,7 @@ class StaticCache extends \yii\base\Component
 
         Craft::info(new PsrMessage('Purging URL prefixes', [
             'urlPrefixes' => $urlPrefixes->all(),
+            'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
         ]), __METHOD__);
 
         // TODO: make sure we don't go over max header size
