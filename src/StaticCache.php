@@ -144,7 +144,11 @@ class StaticCache extends \yii\base\Component
 
     private function handleInvalidateElementCaches(InvalidateElementCachesEvent $event): void
     {
-        $tags = Collection::make($event->tags)->map(fn(string $tag) => StaticCacheTag::create($tag)->minify(true));
+        $tags = Collection::make($event->tags)->map(
+            fn(string $tag) => StaticCacheTag::create($tag)
+                ->withElement($event->element)
+                ->minify(true)
+        );
 
         $skip = $tags->contains(function(StaticCacheTag $tag) {
             return preg_match('/element::craft\\\\elements\\\\\S+::(drafts|revisions)/', $tag->originalValue);
@@ -205,7 +209,8 @@ class StaticCache extends \yii\base\Component
             : Path::new($uri)->withLeadingSlash()->withoutTrailingSlash();
 
         $environmentId = Module::getInstance()->getConfig()->environmentId;
-        $this->tagsToPurge->prepend("$environmentId:$uri");
+        $tag = StaticCacheTag::create("$environmentId:$uri")->withElement($element);
+        $this->tagsToPurge->prepend($tag);
     }
 
     private function addCacheHeadersToWebResponse(): void
@@ -276,20 +281,21 @@ class StaticCache extends \yii\base\Component
             'tags' => $tags,
         ]), __METHOD__);
 
+        $headers = Collection::make([
+            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => $tag->getValue())->unique()->filter(),
+            HeaderEnum::CACHE_PURGE_ELEMENT->value => $tags->map(fn(StaticCacheTag $tag) => $tag->element->id ?? null)->unique()->filter(),
+        ]);
+
         if ($isWebResponse) {
-            $tags->each(fn(StaticCacheTag $tag) => $response->getHeaders()->add(
-                HeaderEnum::CACHE_PURGE_TAG->value,
-                $tag->getValue(),
-            ));
+            $headers->each(function(Collection $values, string $name) use ($response) {
+                $values->each(fn($value) => $response->getHeaders()->add($name, $value));
+            });
 
             return;
         }
 
         // TODO: make sure we don't go over max header size
-        Helper::makeGatewayApiRequest([
-            // Mapping to string because: https://github.com/laravel/framework/pull/54630
-            HeaderEnum::CACHE_PURGE_TAG->value => $tags->map(fn(StaticCacheTag $tag) => (string) $tag)->implode(','),
-        ]);
+        Helper::makeGatewayApiRequest($headers);
     }
 
     public function purgeUrlPrefixes(string ...$urlPrefixes): void

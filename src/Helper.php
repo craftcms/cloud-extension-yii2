@@ -30,6 +30,7 @@ class Helper
         }
 
         $headers = Collection::make($headers)
+            ->map(fn($value) => $value instanceof Collection ? $value->join(',') : (string) $value)
             ->put(HeaderEnum::REQUEST_TYPE->value, 'api');
 
         if (Module::getInstance()->getConfig()->getDevMode()) {
