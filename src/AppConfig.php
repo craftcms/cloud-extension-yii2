@@ -15,7 +15,6 @@ use craft\fs\Temp;
 use craft\helpers\App;
 use craft\log\MonologTarget;
 use craft\queue\Queue as CraftQueue;
-use yii\redis\Cache;
 use yii\web\DbSession;
 
 class AppConfig
