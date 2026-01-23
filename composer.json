@@ -1,22 +1,29 @@
 {
+  "name": "craftcms/cloud-monorepo",
+  "description": "Craft Cloud monorepo for development",
+  "type": "project",
+  "license": "proprietary",
   "minimum-stability": "dev",
-  "name": "craftcms/cloud",
-  "type": "yii2-extension",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "path",
+      "url": "packages/cloud-ops",
+      "options": {
+        "symlink": true
+      }
+    },
+    {
+      "type": "path",
+      "url": "packages/cloud",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "require": {
-    "ext-curl": "*",
-    "bref/bref": "^2.4.2",
-    "bref/extra-php-extensions": "^1.7.2",
-    "craftcms/cms": "^4.6",
-    "craftcms/flysystem": "^1.0.0",
-    "league/flysystem-aws-s3-v3": "^3.15",
-    "league/uri": "^7",
-    "league/uri-components": "^7",
-    "yiisoft/yii2-redis": "^2.0",
-    "yiisoft/yii2-queue": "^2.3.7",
-    "phlak/semver": "^4.1",
-    "99designs/http-signatures": "^4.0",
-    "symfony/process": "^6",
-    "aws/aws-sdk-php": "^3.342.6"
+    "craftcms/cloud": "@dev",
+    "craftcms/cloud-ops": "@dev"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
@@ -33,22 +40,11 @@
     "test": "codecept run unit",
     "test:coverage": "codecept run unit --coverage"
   },
-  "autoload": {
-    "psr-4": {
-      "craft\\cloud\\": "src/"
-    },
-    "files": [
-      "autoload.php"
-    ]
-  },
-  "prefer-stable": true,
   "config": {
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+      "craftcms/plugin-installer": true,
+      "craftcms/cloud-ops": true
     }
-  },
-  "extra": {
-    "bootstrap": "craft\\cloud\\Module"
   }
 }

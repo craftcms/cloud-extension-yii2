@@ -1,0 +1,38 @@
+name: Split Packages
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - name: cloud
+            path: packages/cloud
+            target: craftcms/cloud
+          - name: cloud-ops
+            path: packages/cloud-ops
+            target: craftcms/cloud-ops
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Split ${{ matrix.package.name }}
+        uses: symplify/monorepo-split-github-action@v2.3.0
+        with:
+          package_directory: ${{ matrix.package.path }}
+          repository_organization: craftcms
+          repository_name: ${{ matrix.package.name }}
+          user_name: 'craftcms'
+          user_email: 'github@craftcms.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_REPO_TOKEN }}
