@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\cloud\ops\Composer;
+namespace craft\cloud\ops\composer;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;

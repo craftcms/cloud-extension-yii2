@@ -22,7 +22,7 @@
     ]
   },
   "extra": {
-    "class": "craft\\cloud\\ops\\Composer\\Plugin",
+    "class": "craft\\cloud\\ops\\composer\\Plugin",
     "bootstrap": "craft\\cloud\\ops\\Module"
   },
   "config": {
