@@ -22,8 +22,25 @@ Standalone Yii2 extension + Composer plugin for Cloud infrastructure. Configures
 
 This allows projects to safely migrate from the legacy single-package setup to the new split architecture without bootstrap conflicts.
 
-## Release Plan
+## Releasing
 
-1. **`craftcms/cloud-ops@1`** — Release first to override bootstrap from legacy `craftcms/cloud` installations.
-2. **`craftcms/cloud@3`** — Craft plugin requiring `cloud-ops`. Compatible with Craft 4 and 5.
-3. **`craftcms/cloud@4`** — Future release for Craft 6 (Laravel-based).
+Packages are split to their own repositories via GitHub Actions on push to `main` or on tag.
+
+**To release a new version:**
+
+```bash
+git tag cloud-ops/1.0.0   # releases craftcms/cloud-ops 1.0.0
+git tag cloud/3.0.0       # releases craftcms/cloud 3.0.0
+git push origin <tag>
+```
+
+The workflow extracts the version from the tag prefix and pushes it to the target repo. Packagist picks up new tags automatically.
+
+**Version strategy:**
+
+| Package              | Version | `craftcms/cms`   | `craftcms/cloud-ops` |
+| -------------------- | ------- | ---------------- | -------------------- |
+| `craftcms/cloud`     | 1.x     | `^4.6`           | —                    |
+| `craftcms/cloud`     | 2.x     | `^5.0`           | —                    |
+| `craftcms/cloud`     | 3.x     | `^4.6 \|\| ^5.0` | `^1.0`               |
+| `craftcms/cloud`     | 4.x     | `^6.0`           | TBD                  |
