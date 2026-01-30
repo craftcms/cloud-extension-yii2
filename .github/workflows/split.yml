@@ -57,4 +57,4 @@ jobs:
           user_email: 'github@craftcms.com'
           tag: ${{ steps.tag.outputs.tag }}
         env:
-          GITHUB_TOKEN: ${{ secrets.SPLIT_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CLOUD_SPLIT_REPO_TOKEN }}
