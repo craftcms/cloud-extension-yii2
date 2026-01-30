@@ -1,5 +1,6 @@
 vendor
+node_modules
 .env
-tests/_output
-tests/.env
-tests/_support/_generated
+packages/cloud/tests/_output
+packages/cloud/tests/.env
+packages/cloud/tests/_support/_generated
