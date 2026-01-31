@@ -22,6 +22,9 @@
     ]
   },
   "extra": {
+    "branch-alias": {
+      "dev-main": "1.x-dev"
+    },
     "class": "craft\\cloud\\ops\\composer\\Plugin",
     "bootstrap": "craft\\cloud\\ops\\Module"
   },
