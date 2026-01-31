@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  },
+  "scripts": {
+    "check-prettier": "prettier --check .",
+    "fix-prettier": "prettier --write ."
+  }
+}
