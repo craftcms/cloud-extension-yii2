@@ -4,7 +4,9 @@ namespace craft\cloud\ops;
 
 use Closure;
 use Craft;
+use craft\cachecascade\CascadeCache;
 use craft\helpers\App;
+use yii\caching\ArrayCache;
 use yii\redis\Cache as RedisCache;
 
 class AppConfig
@@ -71,27 +73,27 @@ class AppConfig
             $defaultDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
             $valkey = $this->resolveValkeyEndpoint();
 
-            if ($valkey) {
-                return Craft::createObject([
-                    'class' => RedisCache::class,
-                    'defaultDuration' => $defaultDuration,
-                    'redis' => [
-                        'class' => Redis::class,
-                        'url' => $valkey,
-                        'database' => 0,
-                    ],
-                ]);
-            }
+            $primaryCache = $valkey ? [
+                'class' => RedisCache::class,
+                'defaultDuration' => $defaultDuration,
+                'redis' => [
+                    'class' => Redis::class,
+                    'url' => $valkey,
+                    'database' => 0,
+                ],
+            ] : [
+                'class' => \craft\cache\DbCache::class,
+                'cacheTable' => \craft\db\Table::CACHE,
+                'defaultDuration' => $defaultDuration,
+            ];
 
-            if ($this->tableExists(\craft\db\Table::CACHE)) {
-                return Craft::createObject([
-                    'class' => \craft\cache\DbCache::class,
-                    'cacheTable' => \craft\db\Table::CACHE,
-                    'defaultDuration' => $defaultDuration,
-                ]);
-            }
-
-            return Craft::createObject(App::cacheConfig());
+            return Craft::createObject([
+                'class' => CascadeCache::class,
+                'caches' => [
+                    $primaryCache,
+                    ['class' => ArrayCache::class],
+                ],
+            ]);
         };
     }
 

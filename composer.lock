@@ -1163,7 +1163,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/cloud-ops",
-                "reference": "6227b0060e110ae59645ab951e022165df5092b2"
+                "reference": "272600a3113488ac04ca786eca9309e7be5c3079"
             },
             "require": {
                 "aws/aws-sdk-php": "^3.342.6",
@@ -1171,6 +1171,7 @@
                 "bref/extra-php-extensions": "^1.7.2",
                 "composer-plugin-api": "^2.0",
                 "craftcms/cms": "^4.6 || ^5.0",
+                "craftcms/yii2-cache-cascade": "^1.0",
                 "php": "^8.2",
                 "yiisoft/yii2-queue": "^2.3.7",
                 "yiisoft/yii2-redis": "^2.0"
@@ -1463,6 +1464,53 @@
                 "source": "https://github.com/craftcms/server-check"
             },
             "time": "2025-07-23T14:20:09+00:00"
+        },
+        {
+            "name": "craftcms/yii2-cache-cascade",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/craftcms/yii2-cache-cascade.git",
+                "reference": "302ad8259bd40b3ca8ec9b4df628a1547e54c5e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/craftcms/yii2-cache-cascade/zipball/302ad8259bd40b3ca8ec9b4df628a1547e54c5e7",
+                "reference": "302ad8259bd40b3ca8ec9b4df628a1547e54c5e7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4",
+                "yiisoft/yii2": "^2.0.45"
+            },
+            "require-dev": {
+                "carthage-software/mago": "^1.1.0",
+                "phpunit/phpunit": "^9.5",
+                "yidas/yii2-composer-bower-skip": "^2.0"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "craft\\cachecascade\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A Yii2 cache component that cascades through multiple cache drivers on failure",
+            "keywords": [
+                "cache",
+                "cascade",
+                "fallback",
+                "resilience",
+                "yii2"
+            ],
+            "support": {
+                "issues": "https://github.com/craftcms/yii2-cache-cascade/issues",
+                "source": "https://github.com/craftcms/yii2-cache-cascade/tree/1.1.0"
+            },
+            "time": "2026-02-01T09:57:56+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
