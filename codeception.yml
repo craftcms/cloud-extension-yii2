@@ -1,17 +1,17 @@
 actor: Tester
 paths:
-  tests: tests
-  output: tests/_output
-  data: tests/_data
-  support: tests/_support
-  envs: tests/_envs
-bootstrap: _bootstrap.php
+  tests: packages/cloud/tests
+  output: packages/cloud/tests/_output
+  data: packages/cloud/tests/_data
+  support: packages/cloud/tests/_support
+  envs: packages/cloud/tests/_envs
+bootstrap: packages/cloud/tests/_bootstrap.php
 params:
-  - tests/.env
+  - packages/cloud/tests/.env
 modules:
   config:
     \craft\test\Craft:
-      configFile: 'tests/_craft/config/test.php'
+      configFile: 'packages/cloud/tests/_craft/config/test.php'
       entryUrl: 'http://my-project.test/index.php'
       projectConfig: {}
       migrations: []

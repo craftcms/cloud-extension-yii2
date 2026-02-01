@@ -5,7 +5,8 @@ use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return static function(ECSConfig $ecsConfig): void {
     $ecsConfig->paths([
-        __DIR__ . '/src',
+        __DIR__ . '/packages/cloud/src',
+        __DIR__ . '/packages/cloud-ops/src',
         __FILE__,
     ]);
 
